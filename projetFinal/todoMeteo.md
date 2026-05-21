@@ -101,13 +101,13 @@ Ces fichiers sont créés une seule fois et chargés en base au démarrage.
 
 ### Phase 2 — API / Vues de données
 
-- [ ] Créer les vues (ou viewsets DRF) pour exposer :
-  - [ ] Liste des régions et stations
-  - [ ] Données météo current par location
-  - [ ] Historique hourly par location
-  - [ ] Données daily (7 derniers jours)
-  - [ ] Rapport météo du jour
-  - [ ] Alertes actives
+- [X] Créer les vues (ou viewsets DRF) pour exposer :
+  - [X] Liste des régions et stations
+  - [X] Données météo current par location
+  - [X] Historique hourly par location
+  - [X] Données daily (7 derniers jours)
+  - [X] Rapport météo du jour
+  - [X] Alertes actives
 
 ### Phase 3 — Dashboard principal
 
