@@ -127,52 +127,51 @@ class WeatherStationViewSet(viewsets.ModelViewSet):
     def hourly_history(self, request, pk=None):
         station = self.get_object()
         hours = int(request.query_params.get('hours', 24))
-        since = timezone.now() - timedelta(hours=hours)
         queryset = (
             WeatherHourly.objects
-            .filter(station=station, date_heure__gte=since)
+            .filter(station=station)
             .select_related('station', 'source_api')
             .order_by('-date_heure')
         )
-        return Response(WeatherHourlySerializer(queryset, many=True).data)
+        return Response(WeatherHourlySerializer(queryset[:hours], many=True).data)
 
     @action(detail=True, methods=['get'], url_path='daily-trend')
     def daily_trend(self, request, pk=None):
         station = self.get_object()
         days = int(request.query_params.get('days', 7))
-        since = timezone.localdate() - timedelta(days=days - 1)
         queryset = (
             WeatherDaily.objects
-            .filter(station=station, date__gte=since)
+            .filter(station=station)
             .select_related('station', 'source_api')
             .order_by('-date')
         )
-        return Response(WeatherDailySerializer(queryset, many=True).data)
+        return Response(WeatherDailySerializer(queryset[:days], many=True).data)
 
     @action(detail=True, methods=['get'], url_path='report-today')
     def report_today(self, request, pk=None):
         station = self.get_object()
-        today = timezone.localdate()
         report = (
             WeatherReport.objects
-            .filter(station=station, date=today)
+            .filter(station=station)
             .select_related('station')
+            .order_by('-date')
             .first()
         )
         if report is None:
-            return Response({"detail": "Aucun rapport trouvé pour aujourd'hui."}, status=404)
+            return Response({"detail": "Aucun rapport trouvé pour cette station."}, status=404)
         return Response(WeatherReportSerializer(report).data)
 
     @action(detail=True, methods=['get'], url_path='active-alerts')
     def active_alerts(self, request, pk=None):
         station = self.get_object()
-        since = timezone.now() - timedelta(days=1)
         queryset = (
             Alert.objects
-            .filter(station=station, date_heure__gte=since)
+            .filter(station=station)
             .select_related('station')
             .order_by('-date_heure')
         )
+        if not queryset.exists():
+            return Response([])
         return Response(AlertSerializer(queryset, many=True).data)
 
 

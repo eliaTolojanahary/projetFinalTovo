@@ -19,6 +19,17 @@ SEED_TABLES = [
     "climate_types",
 ]
 
+CREATED_AT_TABLES = [
+    "regions",
+    "api_sources",
+    "variables",
+    "weather_stations",
+    "weather_hourly",
+    "weather_daily",
+    "weather_report",
+    "alerts",
+]
+
 
 class Command(BaseCommand):
     help = "Load test data from test-data.sql into PostgreSQL."
@@ -51,6 +62,7 @@ class Command(BaseCommand):
         with transaction.atomic():
             if options["reset"]:
                 self._truncate_tables()
+            self._ensure_created_at_defaults()
 
             with connection.cursor() as cursor:
                 for statement in statements:
@@ -63,3 +75,10 @@ class Command(BaseCommand):
             cursor.execute(
                 f'TRUNCATE TABLE {", ".join(SEED_TABLES)} RESTART IDENTITY CASCADE;'
             )
+
+    def _ensure_created_at_defaults(self):
+        with connection.cursor() as cursor:
+            for table_name in CREATED_AT_TABLES:
+                cursor.execute(
+                    f'ALTER TABLE {table_name} ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP;'
+                )
