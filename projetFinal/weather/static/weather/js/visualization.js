@@ -132,11 +132,12 @@
         const p = current.precipitation || current.rain || 0;
         const w = current.wind_speed_10m || '';
         const pres = current.surface_pressure || '';
-        document.getElementById('metricTemp')?.replaceChildren(t===null? '--' : String(t));
-        document.getElementById('metricHumidity')?.replaceChildren(h===null? '--' : String(h));
-        document.getElementById('metricRain')?.replaceChildren(p===null? '--' : String(p));
-        document.getElementById('metricWind')?.replaceChildren(w===null? '--' : String(w));
-        document.getElementById('metricPressure')?.replaceChildren(pres===null? '--' : String(pres));
+          const setText = (id, v)=>{ const el = document.getElementById(id); if(!el) return; el.textContent = (v===null||v===undefined)? '--' : String(v); };
+          setText('metricTemp', t);
+          setText('metricHumidity', h);
+          setText('metricRain', p);
+          setText('metricWind', w);
+          setText('metricPressure', pres);
         // station short info
         const si = document.getElementById('stationInfo');
         if(si){ si.innerHTML = `<div class="station-pill">Station ID: ${stationId}</div>`; }
@@ -145,8 +146,9 @@
 
     // report
     fetchJSON(`${api.stations}${stationId}/report-today/`).then(report=>{
-      if(report){ document.getElementById('reportData')?.replaceChildren(report.summary_text || 'Pas de rapport'); }
-    }).catch(err=>{ document.getElementById('reportData')?.replaceChildren('Pas de rapport'); });
+      const rd = document.getElementById('reportData');
+      if(rd){ rd.textContent = report ? (report.summary_text || 'Pas de rapport') : 'Pas de rapport'; }
+    }).catch(err=>{ const rd = document.getElementById('reportData'); if(rd) rd.textContent = 'Pas de rapport'; });
 
     // alerts
     fetchJSON(`${api.stations}${stationId}/active-alerts/`).then(alerts=>{
