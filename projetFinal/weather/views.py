@@ -227,3 +227,11 @@ class VisualizationHistoriqueView(TemplateView):
 
 class VisualizationTendancesView(TemplateView):
     template_name = 'weather/visualization_tendances.html'
+
+
+class ReportsListView(TemplateView):
+    template_name = 'weather/reports_list.html'
+
+
+class ReportDetailView(TemplateView):
+    template_name = 'weather/report_detail.html'

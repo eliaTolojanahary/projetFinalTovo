@@ -31,6 +31,7 @@ from weather.views import (
 )
 from weather.views import DashboardView
 from weather.views import VisualizationHistoriqueView, VisualizationTendancesView
+from weather.views import ReportsListView, ReportDetailView
 
 # Initialisation du routeur automatique de DRF
 router = DefaultRouter()
@@ -52,5 +53,7 @@ urlpatterns = [
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('visualization/historique/', VisualizationHistoriqueView.as_view(), name='visualization-historique'),
     path('visualization/tendances/', VisualizationTendancesView.as_view(), name='visualization-tendances'),
+    path('reports/', ReportsListView.as_view(), name='reports-list'),
+    path('reports/<int:pk>/', ReportDetailView.as_view(), name='report-detail'),
     path('', include(router.urls)),
 ]
