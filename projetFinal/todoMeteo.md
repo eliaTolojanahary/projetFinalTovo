@@ -111,11 +111,11 @@ Ces fichiers sont créés une seule fois et chargés en base au démarrage.
 
 ### Phase 3 — Dashboard principal
 
-- [ ] Page d'accueil : carte de Madagascar avec les stations météo
-- [ ] Sélecteur de région / station
-- [ ] Bloc **météo actuelle** : température, humidité, précipitations, vent, pression
-- [ ] Bloc **rapport du jour** : texte de synthèse + indicateurs clés
-- [ ] Bloc **alertes** : alertes météo actives avec niveau de sévérité
+- [X] Page d'accueil : carte de Madagascar avec les stations météo
+- [X] Sélecteur de région / station
+- [X] Bloc **météo actuelle** : température, humidité, précipitations, vent, pression
+- [X] Bloc **rapport du jour** : texte de synthèse + indicateurs clés
+- [X] Bloc **alertes** : alertes météo actives avec niveau de sévérité
 
 ### Phase 4 — Pages de visualisation
 
