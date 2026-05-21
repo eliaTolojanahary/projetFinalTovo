@@ -119,13 +119,13 @@ Ces fichiers sont créés une seule fois et chargés en base au démarrage.
 
 ### Phase 4 — Pages de visualisation
 
-- [ ] Page **historique** : graphiques horaires sur 24h (température, pluie, humidité)
-- [ ] Page **tendances** : graphiques journaliers sur 7 jours
-- [ ] Composant graphiques (Chart.js ou Plotly) :
-  - [ ] Courbe de température (min / moy / max)
-  - [ ] Barres de précipitations
-  - [ ] Courbe d'humidité
-  - [ ] Jauge de vent
+- [X] Page **historique** : graphiques horaires sur 24h (température, pluie, humidité)
+- [X] Page **tendances** : graphiques journaliers sur 7 jours
+- [X] Composant graphiques (Chart.js ou Plotly) :
+  - [X] Courbe de température (min / moy / max)
+  - [X] Barres de précipitations
+  - [X] Courbe d'humidité
+  - [X] Jauge de vent
 
 ### Phase 5 — Pages de rapports
 

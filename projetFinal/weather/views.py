@@ -219,3 +219,11 @@ class AlertViewSet(viewsets.ModelViewSet):
 
 class DashboardView(TemplateView):
     template_name = 'weather/dashboard.html'
+
+
+class VisualizationHistoriqueView(TemplateView):
+    template_name = 'weather/visualization_historique.html'
+
+
+class VisualizationTendancesView(TemplateView):
+    template_name = 'weather/visualization_tendances.html'

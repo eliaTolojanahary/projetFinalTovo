@@ -1,0 +1,44 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tendances — Visualisation</title>
+  <link rel="stylesheet" href="{% static 'weather/css/dashboard.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="app-body">
+  <header class="topbar">
+    <h1>Tendances — 7 jours</h1>
+    <div class="toolbar-controls">
+      <select id="regionSelect"></select>
+      <select id="stationSelect"></select>
+      <select id="daysSelect">
+        <option value="7">7 jours</option>
+        <option value="14">14 jours</option>
+      </select>
+      <button id="refreshBtn">Rafraîchir</button>
+    </div>
+  </header>
+  <main class="visualization-grid">
+    <section class="card">
+      <h3>Température (min / moy / max)</h3>
+      <canvas id="dailyTempChart"></canvas>
+      <p class="chart-desc">Tendances journalières des températures (°C) : min, moyenne et max pour chaque jour de la période sélectionnée.</p>
+    </section>
+    <section class="card">
+      <h3>Précipitation (mm)</h3>
+      <canvas id="dailyPrecipChart"></canvas>
+      <p class="chart-desc">Précipitation quotidienne (mm) — somme des précipitations enregistrées sur chaque jour.</p>
+    </section>
+    <section class="card">
+      <h3>Humidité (%)</h3>
+      <canvas id="dailyHumidityChart"></canvas>
+      <p class="chart-desc">Humidité moyenne journalière (%) pour chaque jour de la période sélectionnée.</p>
+    </section>
+  </main>
+
+  <script src="{% static 'weather/js/visualization.js' %}"></script>
+</body>
+</html>
