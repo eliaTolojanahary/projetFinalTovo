@@ -1,0 +1,118 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather Dashboard — Madagascar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="{% static 'weather/css/dashboard.css' %}">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="dashboard-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Weather Analytics Madagascar</p>
+        <h1>Dashboard météo interactif</h1>
+        <p class="subtitle">Filtre, compare et visualise les stations météo en temps réel.</p>
+      </div>
+      <div class="topbar-badge">
+        <span id="lastRefreshLabel">Dernière mise à jour: --</span>
+      </div>
+    </header>
+
+    <section class="toolbar card">
+      <div class="field-group">
+        <label for="regionSelect">Région</label>
+        <select id="regionSelect"></select>
+      </div>
+      <div class="field-group">
+        <label for="stationSelect">Station</label>
+        <select id="stationSelect"></select>
+      </div>
+      <div class="field-group">
+        <label for="periodSelect">Période</label>
+        <select id="periodSelect">
+          <option value="24">24h</option>
+          <option value="72">72h</option>
+          <option value="168">7 jours</option>
+        </select>
+      </div>
+      <div class="toolbar-actions">
+        <button id="refreshButton" type="button">Rafraîchir</button>
+      </div>
+    </section>
+
+    <main class="layout-grid">
+      <aside class="sidebar card">
+        <div class="sidebar-section">
+          <h2>Station active</h2>
+          <div id="stationInfo" class="station-info"></div>
+        </div>
+
+        <div class="sidebar-section">
+          <h2>Alertes actives</h2>
+          <ul id="alertsList" class="alert-list"></ul>
+        </div>
+
+        <div class="sidebar-section">
+          <h2>Rapport du jour</h2>
+          <p id="reportData" class="report-text">Sélectionnez une station</p>
+        </div>
+      </aside>
+
+      <section class="content-area">
+        <section class="hero-grid">
+          <article class="metric-card accent-blue">
+            <p class="metric-label">Température</p>
+            <strong id="metricTemp">--</strong>
+            <span>°C</span>
+          </article>
+          <article class="metric-card accent-cyan">
+            <p class="metric-label">Pluie</p>
+            <strong id="metricRain">--</strong>
+            <span>mm</span>
+          </article>
+          <article class="metric-card accent-green">
+            <p class="metric-label">Humidité</p>
+            <strong id="metricHumidity">--</strong>
+            <span>%</span>
+          </article>
+          <article class="metric-card accent-gold">
+            <p class="metric-label">Vent</p>
+            <strong id="metricWind">--</strong>
+            <span>km/h</span>
+          </article>
+          <article class="metric-card accent-violet">
+            <p class="metric-label">Pression</p>
+            <strong id="metricPressure">--</strong>
+            <span>hPa</span>
+          </article>
+        </section>
+
+        <section class="map-card card">
+          <div class="section-heading">
+            <h2>Carte des stations</h2>
+            <p>Repère visuel des stations sélectionnées et de leur région.</p>
+          </div>
+          <div id="map"></div>
+        </section>
+
+        <section class="charts-grid">
+          <article class="card chart-card"><div class="section-heading"><h2>Température</h2><p>Courbe horaire</p></div><canvas id="tempChart"></canvas></article>
+          <article class="card chart-card"><div class="section-heading"><h2>Précipitations</h2><p>Volume horaire</p></div><canvas id="rainChart"></canvas></article>
+          <article class="card chart-card"><div class="section-heading"><h2>Humidité</h2><p>Évolution horaire</p></div><canvas id="humidityChart"></canvas></article>
+          <article class="card chart-card"><div class="section-heading"><h2>Vent</h2><p>Vitesse moyenne</p></div><canvas id="windChart"></canvas></article>
+          <article class="card chart-card"><div class="section-heading"><h2>Pression</h2><p>Variation de surface</p></div><canvas id="pressureChart"></canvas></article>
+        </section>
+      </section>
+    </main>
+  </div>
+  <script src="{% static 'weather/js/dashboard.js' %}"></script>
+</body>
+</html>
