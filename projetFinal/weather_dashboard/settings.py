@@ -22,13 +22,11 @@ load_dotenv(BASE_DIR/".env")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-nc5&e$d#ml8gi5vgunbm@c*2yr+hq8e7em07lh1vtgh2d6#3ml'
-
+SECRET_KEY = os.getenv("SECRET_KEY", "change-me-for-dev")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
 
 # Application definition
 
@@ -121,4 +119,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]          # fichiers versionés par le projet (dev)
+STATIC_ROOT = BASE_DIR / "staticfiles"            # destination de collectstatic (prod)
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
