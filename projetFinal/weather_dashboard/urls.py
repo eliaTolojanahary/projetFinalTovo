@@ -29,6 +29,7 @@ from weather.views import (
     WeatherReportViewSet,
     AlertViewSet
 )
+from weather.views import DashboardView
 
 # Initialisation du routeur automatique de DRF
 router = DefaultRouter()
@@ -47,5 +48,6 @@ router.register(r'alerts', AlertViewSet, basename='alert')
 
 # Les URLs de l'application incluent toutes les routes générées par le routeur
 urlpatterns = [
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('', include(router.urls)),
 ]

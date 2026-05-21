@@ -5,6 +5,7 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
 from datetime import timedelta
+from django.views.generic import TemplateView
 
 from .models import (
     ClimateType,
@@ -215,3 +216,7 @@ class AlertViewSet(viewsets.ModelViewSet):
     search_fields = ['message']
     ordering_fields = ['date_heure', 'niveau']
     ordering = ['-date_heure']
+
+
+class DashboardView(TemplateView):
+    template_name = 'weather/dashboard.html'

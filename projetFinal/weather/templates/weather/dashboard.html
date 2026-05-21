@@ -1,0 +1,50 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather Dashboard — Madagascar</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="{% static 'weather/css/dashboard.css' %}">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Weather Dashboard — Madagascar</h1>
+    </header>
+    <main>
+      <aside id="sidebar">
+        <h2>Stations</h2>
+        <select id="stationSelect"></select>
+        <div id="stationInfo"></div>
+        <h3>Alertes</h3>
+        <ul id="alertsList"></ul>
+      </aside>
+
+      <section id="mapContainer">
+        <div id="map"></div>
+        <div id="widgets">
+          <div class="widget" id="currentWidget">
+            <h3>Météo actuelle</h3>
+            <pre id="currentData">Sélectionnez une station</pre>
+          </div>
+
+          <div class="widget" id="reportWidget">
+            <h3>Rapport du jour</h3>
+            <pre id="reportData">-</pre>
+          </div>
+
+          <div class="widget" id="historyWidget">
+            <h3>Historique (24h)</h3>
+            <canvas id="historyChart" width="400" height="120"></canvas>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="{% static 'weather/js/dashboard.js' %}"></script>
+</body>
+</html>
