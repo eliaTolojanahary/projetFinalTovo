@@ -112,10 +112,31 @@
 
         <section class="charts-grid">
           <article class="card chart-card"><div class="section-heading"><h2>Température</h2><p>Courbe horaire</p></div><canvas id="tempChart"></canvas></article>
-          <article class="card chart-card"><div class="section-heading"><h2>Précipitations</h2><p>Volume horaire</p></div><canvas id="rainChart"></canvas></article>
-          <article class="card chart-card"><div class="section-heading"><h2>Humidité</h2><p>Évolution horaire</p></div><canvas id="humidityChart"></canvas></article>
-          <article class="card chart-card"><div class="section-heading"><h2>Vent</h2><p>Vitesse moyenne</p></div><canvas id="windChart"></canvas></article>
-          <article class="card chart-card"><div class="section-heading"><h2>Pression</h2><p>Variation de surface</p></div><canvas id="pressureChart"></canvas></article>
+          <article class="card chart-card">
+            <div class="section-heading"><h2>Température</h2><p>Courbe horaire</p></div>
+            <canvas id="tempChart"></canvas>
+            <p class="chart-desc">Courbe horaire de la température en °C. Chaque point représente la mesure horaire enregistrée pour la station sélectionnée.</p>
+          </article>
+          <article class="card chart-card">
+            <div class="section-heading"><h2>Précipitations</h2><p>Volume horaire</p></div>
+            <canvas id="rainChart"></canvas>
+            <p class="chart-desc">Volume de précipitations par heure (mm). Les barres indiquent la quantité de pluie enregistrée pour chaque intervalle horaire.</p>
+          </article>
+          <article class="card chart-card">
+            <div class="section-heading"><h2>Humidité</h2><p>Évolution horaire</p></div>
+            <canvas id="humidityChart"></canvas>
+            <p class="chart-desc">Humidité relative (%) mesurée chaque heure. Utilisez ce graphique pour repérer les variations d'humidité sur la période choisie.</p>
+          </article>
+          <article class="card chart-card">
+            <div class="section-heading"><h2>Vent</h2><p>Vitesse moyenne</p></div>
+            <canvas id="windChart"></canvas>
+            <p class="chart-desc">Vitesse du vent (km/h) — valeurs horaires. Graphique utile pour détecter les périodes de vent fort.</p>
+          </article>
+          <article class="card chart-card">
+            <div class="section-heading"><h2>Pression</h2><p>Variation de surface</p></div>
+            <canvas id="pressureChart"></canvas>
+            <p class="chart-desc">Pression atmosphérique au niveau de la station (hPa), mesurée chaque heure. Les tendances peuvent indiquer des changements météorologiques.</p>
+          </article>
         </section>
       </section>
       </main>
