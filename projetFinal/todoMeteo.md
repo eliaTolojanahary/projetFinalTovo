@@ -96,7 +96,7 @@ Ces fichiers sont créés une seule fois et chargés en base au démarrage.
 
 - [X] Créer le projet Django `weather_dashboard`
 - [X] Configurer la connexion à la base PostgreSQL partagée
-- [ ] Définir les modèles Django (refléter les tables : `regions`, `weather_locations`, `weather_clean`, `weather_daily`, `weather_report`, `alerts`)
+- [X] Définir les modèles Django (refléter les tables : `regions`, `weather_locations`, `weather_clean`, `weather_daily`, `weather_report`, `alerts`)
 - [ ] Configurer les settings (DEBUG, ALLOWED_HOSTS, static files)
 
 ### Phase 2 — API / Vues de données
