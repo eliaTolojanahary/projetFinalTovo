@@ -28,6 +28,20 @@ class RegionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class RegionWithStationSerializer(serializers.ModelSerializer):
+    station = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Region
+        fields = '__all__'
+
+    def get_station(self, obj):
+        try:
+            return WeatherStationSerializer(obj.weatherstation).data
+        except WeatherStation.DoesNotExist:
+            return None
+
+
 class ApiSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApiSource
@@ -50,6 +64,12 @@ class WeatherStationSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeatherStation
         fields = '__all__'
+
+
+class WeatherStationSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WeatherStation
+        fields = ['id', 'nom_station', 'region', 'latitude', 'longitude', 'altitude', 'timezone']
 
 
 # =========================================================
