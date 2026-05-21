@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apache Airflow — Fiche de référence rapide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0D1117;
+    --bg2:       #161B22;
+    --bg3:       #21262D;
+    --border:    #30363D;
+    --text:      #E6EDF3;
+    --muted:     #8B949E;
+    --accent:    #F78166;
+    --blue:      #58A6FF;
+    --green:     #3FB950;
+    --yellow:    #D29922;
+    --purple:    #BC8CFF;
+    --teal:      #39D353;
+    --orange:    #F0883E;
+    --badge-bg:  #1F2937;
+  }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 32px 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left { flex: 1; }
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--orange), var(--accent));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #fff;
+  }
+  h1 { font-size: 22px; font-weight: 700; color: var(--text); }
+  .subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .tag {
+    display: inline-block;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .tag-orange { color: var(--orange); border-color: var(--orange); }
+  .tag-blue   { color: var(--blue);   border-color: var(--blue); }
+  .header-tags { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+
+  /* ── GRID ── */
+  .grid { display: grid; gap: 14px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 720px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .card.orange::before { background: var(--orange); }
+  .card.blue::before   { background: var(--blue); }
+  .card.green::before  { background: var(--green); }
+  .card.purple::before { background: var(--purple); }
+  .card.teal::before   { background: var(--teal); }
+  .card.yellow::before { background: var(--yellow); }
+  .card.accent::before { background: var(--accent); }
+
+  .card-title {
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+  .card.orange .card-title { color: var(--orange); }
+  .card.blue   .card-title { color: var(--blue); }
+  .card.green  .card-title { color: var(--green); }
+  .card.purple .card-title { color: var(--purple); }
+  .card.teal   .card-title { color: var(--teal); }
+  .card.yellow .card-title { color: var(--yellow); }
+  .card.accent .card-title { color: var(--accent); }
+
+  /* ── CODE BLOCK ── */
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    line-height: 1.7;
+    margin: 6px 0;
+  }
+  .k  { color: #FF7B72; }  /* keyword */
+  .s  { color: #A5D6FF; }  /* string */
+  .c  { color: #8B949E; font-style: italic; } /* comment */
+  .f  { color: var(--orange); } /* function */
+  .n  { color: #FFA657; } /* name/class */
+  .v  { color: var(--purple); } /* variable */
+  .p  { color: var(--text); } /* punctuation */
+  .nb { color: var(--green); } /* number/bool */
+
+  /* ── CONCEPT LIST ── */
+  .concept-list { list-style: none; }
+  .concept-list li {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .concept-list li:last-child { border-bottom: none; }
+  .concept-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 90px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--orange);
+    flex-shrink: 0;
+  }
+  .concept-desc { color: var(--muted); line-height: 1.5; }
+
+  /* ── PIPELINE DIAGRAM ── */
+  .pipeline {
+    display: flex; align-items: center; gap: 0;
+    overflow-x: auto;
+    padding: 10px 0;
+  }
+  .pipeline-step {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    flex-shrink: 0;
+  }
+  .p-box {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 11px; font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .p-label { font-size: 10px; color: var(--muted); }
+  .p-arrow {
+    font-size: 18px; color: var(--border);
+    padding: 0 4px; margin-top: -14px;
+  }
+  .p-box.extract  { background: #1C2A1C; color: var(--green);  border: 1px solid var(--green); }
+  .p-box.transform{ background: #1C1C2A; color: var(--blue);   border: 1px solid var(--blue); }
+  .p-box.load     { background: #2A1C1C; color: var(--accent); border: 1px solid var(--accent); }
+  .p-box.trigger  { background: #2A2A1C; color: var(--yellow); border: 1px solid var(--yellow); }
+  .p-box.notify   { background: #221C2A; color: var(--purple); border: 1px solid var(--purple); }
+
+  /* ── STATUS BADGES ── */
+  .status-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .status-badge {
+    display: flex; align-items: center; gap: 5px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px; font-weight: 500;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green  { background: var(--green); }
+  .dot-red    { background: var(--accent); }
+  .dot-yellow { background: var(--yellow); }
+  .dot-blue   { background: var(--blue); }
+  .dot-gray   { background: var(--muted); }
+  .dot-purple { background: var(--purple); }
+
+  /* ── CMD TABLE ── */
+  .cmd-table { width: 100%; border-collapse: collapse; }
+  .cmd-table tr { border-bottom: 1px solid var(--border); }
+  .cmd-table tr:last-child { border-bottom: none; }
+  .cmd-table td { padding: 5px 4px; vertical-align: top; }
+  .cmd-table .cmd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--blue);
+    white-space: nowrap;
+    padding-right: 12px;
+    width: 45%;
+  }
+  .cmd-table .desc { font-size: 11px; color: var(--muted); }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--muted);
+    margin: 22px 0 10px;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 24px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; color: var(--muted);
+  }
+  .footer a { color: var(--blue); text-decoration: none; }
+
+  /* ── INLINE CODE ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 3px; padding: 1px 4px;
+    color: var(--orange);
+  }
+
+  /* ── NOTE BOX ── */
+  .note {
+    background: #1C1F0D;
+    border: 1px solid var(--yellow);
+    border-left: 3px solid var(--yellow);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: #C9A94A;
+    margin-top: 8px;
+  }
+  .note strong { color: var(--yellow); }
+
+  /* ── CONTEXT BOX ── */
+  .context-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--orange);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .context-box strong { color: var(--orange); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-row">
+      <div class="logo-icon">▲</div>
+      <h1>Apache Airflow</h1>
+    </div>
+    <div class="subtitle">Orchestration de pipelines de données — Fiche de référence rapide</div>
+  </div>
+  <div class="header-tags">
+    <span class="tag tag-orange">Orchestration</span>
+    <span class="tag tag-blue">Python &gt;= 3.8</span>
+  </div>
+</div>
+
+<div class="context-box">
+  <strong>Contexte TP :</strong> Airflow orchestre votre ETL imprimantes — il planifie l'extraction MySQL/TXT/Excel/JSON,
+  déclenche les transformations et charge les données en PostgreSQL, le tout de façon automatisée et monitored.
+</div>
+
+<!-- CONCEPTS CLÉS -->
+<div class="section-title">Concepts fondamentaux</div>
+<div class="grid grid-2">
+  <div class="card orange">
+    <div class="card-title">Vocabulaire essentiel</div>
+    <ul class="concept-list">
+      <li><span class="concept-key">DAG</span><span class="concept-desc">Directed Acyclic Graph — le pipeline complet, définit l'ordre des tâches</span></li>
+      <li><span class="concept-key">Task</span><span class="concept-desc">Unité de travail atomique (un Operator instancié)</span></li>
+      <li><span class="concept-key">Operator</span><span class="concept-desc">Template de tâche : PythonOperator, BashOperator, PostgresOperator…</span></li>
+      <li><span class="concept-key">DAG Run</span><span class="concept-desc">Exécution concrète d'un DAG à un instant donné</span></li>
+      <li><span class="concept-key">Scheduler</span><span class="concept-desc">Service qui déclenche les DAGs selon leur schedule</span></li>
+      <li><span class="concept-key">XCom</span><span class="concept-desc">Mécanisme pour passer des données entre tâches</span></li>
+      <li><span class="concept-key">Connection</span><span class="concept-desc">Credentials stockés (DB, API) — référencés par conn_id</span></li>
+    </ul>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">Opérateurs les plus utilisés</div>
+    <ul class="concept-list">
+      <li><span class="concept-key">PythonOp.</span><span class="concept-desc">Exécute une fonction Python — le plus flexible</span></li>
+      <li><span class="concept-key">BashOp.</span><span class="concept-desc">Exécute une commande shell</span></li>
+      <li><span class="concept-key">PostgresOp.</span><span class="concept-desc">Exécute un SQL sur PostgreSQL via conn_id</span></li>
+      <li><span class="concept-key">EmailOp.</span><span class="concept-desc">Envoie un email en cas d'alerte</span></li>
+      <li><span class="concept-key">BranchOp.</span><span class="concept-desc">Branchement conditionnel du flux</span></li>
+      <li><span class="concept-key">DummyOp.</span><span class="concept-desc">Tâche vide — pour structurer le DAG</span></li>
+      <li><span class="concept-key">FileSensor</span><span class="concept-desc">Attend l'apparition d'un fichier avant de continuer</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- DAG EXEMPLE ANNOTÉ -->
+<div class="section-title">Structure d'un DAG — TP imprimantes</div>
+<div class="card green" style="grid-column: 1 / -1;">
+  <div class="card-title">dag_etl_imprimantes.py</div>
+<pre><span class="k">from</span> airflow <span class="k">import</span> DAG
+<span class="k">from</span> airflow.operators.python <span class="k">import</span> PythonOperator
+<span class="k">from</span> airflow.operators.postgres <span class="k">import</span> PostgresOperator
+<span class="k">from</span> airflow.sensors.filesystem <span class="k">import</span> FileSensor
+<span class="k">from</span> datetime <span class="k">import</span> datetime, timedelta
+
+<span class="c"># ── 1. PARAMÈTRES PAR DÉFAUT ──────────────────────────────────</span>
+<span class="v">default_args</span> = {
+    <span class="s">'owner'</span>: <span class="s">'data_team'</span>,
+    <span class="s">'retries'</span>: <span class="nb">2</span>,                          <span class="c"># 2 tentatives en cas d'échec</span>
+    <span class="s">'retry_delay'</span>: timedelta(minutes=<span class="nb">5</span>),
+    <span class="s">'email_on_failure'</span>: <span class="nb">True</span>,
+    <span class="s">'email'</span>: [<span class="s">'data@entreprise.fr'</span>],
+}
+
+<span class="c"># ── 2. DÉCLARATION DU DAG ─────────────────────────────────────</span>
+<span class="k">with</span> DAG(
+    dag_id=<span class="s">'etl_imprimantes'</span>,
+    default_args=<span class="v">default_args</span>,
+    schedule_interval=<span class="s">'0 6 * * 1-5'</span>,     <span class="c"># Tous les jours ouvrés à 6h</span>
+    start_date=datetime(<span class="nb">2024</span>, <span class="nb">1</span>, <span class="nb">1</span>),
+    catchup=<span class="nb">False</span>,                          <span class="c"># Pas de backfill automatique</span>
+    tags=[<span class="s">'dwh'</span>, <span class="s">'imprimantes'</span>],
+) <span class="k">as</span> dag:
+
+    <span class="c"># ── 3. TÂCHES ─────────────────────────────────────────────</span>
+    <span class="v">attendre_fichier</span> = FileSensor(
+        task_id=<span class="s">'attendre_fichier_clients'</span>,
+        filepath=<span class="s">'/data/sources/02_clients.txt'</span>,
+        poke_interval=<span class="nb">60</span>,                   <span class="c"># Vérifie toutes les 60s</span>
+    )
+
+    <span class="v">extraire_mysql</span> = PythonOperator(
+        task_id=<span class="s">'extraire_mysql'</span>,
+        python_callable=<span class="f">extract_mysql_sql</span>,  <span class="c"># Fonction de votre ETL</span>
+    )
+
+    <span class="v">extraire_sources</span> = PythonOperator(
+        task_id=<span class="s">'extraire_sources'</span>,
+        python_callable=<span class="f">extract_all_sources</span>,
+    )
+
+    <span class="v">transformer</span> = PythonOperator(
+        task_id=<span class="s">'transformer_dimensions'</span>,
+        python_callable=<span class="f">run_transformations</span>,
+    )
+
+    <span class="v">charger_pg</span> = PostgresOperator(
+        task_id=<span class="s">'charger_postgres'</span>,
+        postgres_conn_id=<span class="s">'postgres_dwh'</span>,   <span class="c"># Défini dans Connections UI</span>
+        sql=<span class="s">'sql/load_faits.sql'</span>,
+    )
+
+    <span class="c"># ── 4. DÉPENDANCES (ordre d'exécution) ────────────────────</span>
+    <span class="v">attendre_fichier</span> >> <span class="v">extraire_sources</span>
+    <span class="v">extraire_mysql</span>  >> <span class="v">extraire_sources</span>
+    <span class="v">extraire_sources</span> >> <span class="v">transformer</span> >> <span class="v">charger_pg</span></pre>
+</div>
+
+<!-- PIPELINE VISUEL -->
+<div class="section-title">Flux d'exécution du DAG</div>
+<div class="card teal">
+  <div class="card-title">Ordre des tâches</div>
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <div class="p-box trigger">FileSensor</div>
+      <div class="p-label">Attend clients.txt</div>
+    </div>
+    <div class="p-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="p-box extract">Extract MySQL</div>
+      <div class="p-label">Vendeurs + ventes</div>
+    </div>
+    <div class="p-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="p-box extract">Extract Sources</div>
+      <div class="p-label">TXT / Excel / JSON</div>
+    </div>
+    <div class="p-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="p-box transform">Transform</div>
+      <div class="p-label">Dimensions + faits</div>
+    </div>
+    <div class="p-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="p-box load">Load PostgreSQL</div>
+      <div class="p-label">DWH étoile</div>
+    </div>
+    <div class="p-arrow">→</div>
+    <div class="pipeline-step">
+      <div class="p-box notify">Email rapport</div>
+      <div class="p-label">Alerte succès/échec</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUTS + CLI -->
+<div class="grid grid-2">
+  <div class="card yellow">
+    <div class="card-title">Statuts des tâches</div>
+    <div class="status-grid">
+      <div class="status-badge"><div class="dot dot-green"></div>success</div>
+      <div class="status-badge"><div class="dot dot-red"></div>failed</div>
+      <div class="status-badge"><div class="dot dot-yellow"></div>running</div>
+      <div class="status-badge"><div class="dot dot-blue"></div>queued</div>
+      <div class="status-badge"><div class="dot dot-gray"></div>skipped</div>
+      <div class="status-badge"><div class="dot dot-purple"></div>upstream_failed</div>
+      <div class="status-badge"><div class="dot dot-gray"></div>no_status</div>
+    </div>
+    <div class="note" style="margin-top:10px;">
+      <strong>Attention :</strong> <code>upstream_failed</code> — la tâche n'a pas échoué elle-même, mais une tâche amont a échoué.
+    </div>
+  </div>
+
+  <div class="card purple">
+    <div class="card-title">Commandes CLI essentielles</div>
+    <table class="cmd-table">
+      <tr><td class="cmd">airflow db init</td><td class="desc">Initialise la base de métadonnées</td></tr>
+      <tr><td class="cmd">airflow webserver -p 8080</td><td class="desc">Démarre l'UI web</td></tr>
+      <tr><td class="cmd">airflow scheduler</td><td class="desc">Démarre le planificateur</td></tr>
+      <tr><td class="cmd">airflow dags list</td><td class="desc">Liste tous les DAGs</td></tr>
+      <tr><td class="cmd">airflow dags trigger etl_imp.</td><td class="desc">Déclenche manuellement</td></tr>
+      <tr><td class="cmd">airflow tasks test etl_imp. extraire_mysql 2024-01-01</td><td class="desc">Teste une tâche seule</td></tr>
+      <tr><td class="cmd">airflow dags backfill -s 2024-01-01 -e 2024-01-31 etl_imp.</td><td class="desc">Rejoue sur période</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- CRON + BONNES PRATIQUES -->
+<div class="grid grid-2">
+  <div class="card accent">
+    <div class="card-title">Schedule — notation cron</div>
+<pre><span class="s">'@daily'</span>            <span class="c"># Chaque jour à minuit</span>
+<span class="s">'@weekly'</span>           <span class="c"># Chaque dimanche</span>
+<span class="s">'@hourly'</span>           <span class="c"># Chaque heure</span>
+<span class="s">'0 6 * * 1-5'</span>      <span class="c"># Lun-Ven à 6h00</span>
+<span class="s">'0 22 * * *'</span>       <span class="c"># Tous les jours à 22h</span>
+<span class="s">'*/15 * * * *'</span>     <span class="c"># Toutes les 15 minutes</span>
+<span class="s">None</span>                <span class="c"># Déclenche uniquement manuellement</span></pre>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">Bonnes pratiques</div>
+    <ul class="concept-list">
+      <li><span class="concept-key">Idempotence</span><span class="concept-desc">Un DAG re-exécuté doit donner le même résultat (INSERT OR REPLACE)</span></li>
+      <li><span class="concept-key">Atomicité</span><span class="concept-desc">Chaque tâche doit réussir ou échouer entièrement, sans état partiel</span></li>
+      <li><span class="concept-key">catchup=False</span><span class="concept-desc">Évite le backfill automatique lors du 1er démarrage</span></li>
+      <li><span class="concept-key">Connections UI</span><span class="concept-desc">Ne jamais hardcoder les credentials dans le code</span></li>
+      <li><span class="concept-key">Logs</span><span class="concept-desc">Toujours logger dans les fonctions Python pour traçabilité</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- INSTALLATION RAPIDE -->
+<div class="section-title">Installation rapide (local)</div>
+<div class="card green">
+  <div class="card-title">Setup en 4 commandes</div>
+<pre><span class="c"># 1. Installation</span>
+pip install apache-airflow==2.8.0 --constraint <span class="s">"https://raw.githubusercontent.com/apache/airflow/constraints-2.8.0/constraints-3.10.txt"</span>
+
+<span class="c"># 2. Initialisation</span>
+<span class="k">export</span> AIRFLOW_HOME=~/airflow
+airflow db init
+
+<span class="c"># 3. Créer un utilisateur admin</span>
+airflow users create --role Admin --username admin --password admin \
+  --firstname Admin --lastname User --email admin@example.com
+
+<span class="c"># 4. Démarrer (deux terminaux séparés)</span>
+airflow webserver --port 8080   <span class="c"># → http://localhost:8080</span>
+airflow scheduler</pre>
+  <div class="note">
+    <strong>Astuce :</strong> Placez vos fichiers DAG dans <code>~/airflow/dags/</code>. Le scheduler les détecte automatiquement (délai ~30s).
+  </div>
+</div>
+
+<div class="footer">
+  <span>TP DataWarehouse — Référence Airflow 2.x</span>
+  <a href="https://airflow.apache.org/docs/">airflow.apache.org/docs</a>
+</div>
+
+</body>
+</html>

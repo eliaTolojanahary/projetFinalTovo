@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dbt — Fiche de référence rapide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0B1120;
+    --bg2:      #111827;
+    --bg3:      #1F2937;
+    --border:   #374151;
+    --text:     #F3F4F6;
+    --muted:    #9CA3AF;
+    --accent:   #F59E0B;
+    --blue:     #60A5FA;
+    --green:    #34D399;
+    --red:      #F87171;
+    --purple:   #A78BFA;
+    --teal:     #2DD4BF;
+    --orange:   #FB923C;
+    --dbt-red:  #FF694A;
+  }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 32px 24px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 28px; padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--dbt-red);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff; letter-spacing: -0.5px;
+  }
+  h1 { font-size: 22px; font-weight: 700; }
+  .subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .tag {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px; border: 1px solid;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .tag-red  { color: var(--dbt-red);  border-color: var(--dbt-red); }
+  .tag-teal { color: var(--teal); border-color: var(--teal); }
+  .header-tags { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+
+  .grid { display: grid; gap: 14px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 720px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  }
+  .card.red::before    { background: var(--dbt-red); }
+  .card.blue::before   { background: var(--blue); }
+  .card.green::before  { background: var(--green); }
+  .card.purple::before { background: var(--purple); }
+  .card.teal::before   { background: var(--teal); }
+  .card.yellow::before { background: var(--accent); }
+  .card.orange::before { background: var(--orange); }
+
+  .card-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 12px;
+  }
+  .card.red    .card-title { color: var(--dbt-red); }
+  .card.blue   .card-title { color: var(--blue); }
+  .card.green  .card-title { color: var(--green); }
+  .card.purple .card-title { color: var(--purple); }
+  .card.teal   .card-title { color: var(--teal); }
+  .card.yellow .card-title { color: var(--accent); }
+  .card.orange .card-title { color: var(--orange); }
+
+  pre {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 6px; padding: 10px 12px;
+    overflow-x: auto; line-height: 1.7; margin: 6px 0;
+  }
+  .k  { color: #F472B6; }
+  .s  { color: #86EFAC; }
+  .c  { color: #6B7280; font-style: italic; }
+  .f  { color: var(--dbt-red); }
+  .n  { color: var(--accent); }
+  .v  { color: var(--purple); }
+  .j  { color: var(--teal); }   /* jinja */
+  .nb { color: var(--blue); }
+
+  .concept-list { list-style: none; }
+  .concept-list li {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 5px 0; border-bottom: 1px solid var(--border); font-size: 12px;
+  }
+  .concept-list li:last-child { border-bottom: none; }
+  .concept-key {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
+    min-width: 80px; padding: 1px 6px; border-radius: 4px;
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--dbt-red); flex-shrink: 0;
+  }
+  .concept-desc { color: var(--muted); line-height: 1.5; }
+
+  code {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 3px; padding: 1px 4px; color: var(--accent);
+  }
+
+  .cmd-table { width: 100%; border-collapse: collapse; }
+  .cmd-table tr { border-bottom: 1px solid var(--border); }
+  .cmd-table tr:last-child { border-bottom: none; }
+  .cmd-table td { padding: 5px 4px; vertical-align: top; }
+  .cmd-table .cmd {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--blue); white-space: nowrap; padding-right: 12px; width: 42%;
+  }
+  .cmd-table .desc { font-size: 11px; color: var(--muted); }
+
+  .section-title {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--muted); margin: 22px 0 10px;
+  }
+
+  .note {
+    background: #1C1A0A; border: 1px solid var(--accent);
+    border-left: 3px solid var(--accent); border-radius: 6px;
+    padding: 8px 12px; font-size: 11px; color: #C9A94A; margin-top: 8px;
+  }
+  .note strong { color: var(--accent); }
+
+  .context-box {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-left: 3px solid var(--dbt-red); border-radius: 6px;
+    padding: 10px 14px; font-size: 12px; color: var(--muted); margin-bottom: 14px;
+  }
+  .context-box strong { color: var(--dbt-red); }
+
+  /* Layer badges */
+  .layer-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .layer-badge {
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; border: 1px solid;
+  }
+  .layer-staging  { color: var(--blue);   border-color: var(--blue);   background: rgba(96,165,250,0.08); }
+  .layer-marts    { color: var(--green);  border-color: var(--green);  background: rgba(52,211,153,0.08); }
+  .layer-sources  { color: var(--muted);  border-color: var(--border); background: var(--bg3); }
+  .layer-int      { color: var(--purple); border-color: var(--purple); background: rgba(167,139,250,0.08); }
+
+  /* Tree structure */
+  .tree { font-family: 'JetBrains Mono', monospace; font-size: 11px; line-height: 2; }
+  .tree .dir  { color: var(--accent); }
+  .tree .file { color: var(--text); }
+  .tree .desc { color: var(--muted); font-family: 'Sora', sans-serif; font-size: 10px; }
+
+  /* Materialization badges */
+  .mat-grid { display: flex; flex-direction: column; gap: 6px; }
+  .mat-row { display: flex; align-items: center; gap: 8px; }
+  .mat-badge {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px; border: 1px solid; min-width: 80px;
+    text-align: center;
+  }
+  .mat-view   { color: var(--teal);   border-color: var(--teal);   background: rgba(45,212,191,0.08); }
+  .mat-table  { color: var(--green);  border-color: var(--green);  background: rgba(52,211,153,0.08); }
+  .mat-increm { color: var(--purple); border-color: var(--purple); background: rgba(167,139,250,0.08); }
+  .mat-ephem  { color: var(--muted);  border-color: var(--border); background: var(--bg3); }
+  .mat-desc { font-size: 11px; color: var(--muted); }
+
+  .footer {
+    margin-top: 24px; padding-top: 14px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; color: var(--muted);
+  }
+  .footer a { color: var(--blue); text-decoration: none; }
+
+  .arrow { color: var(--border); font-size: 14px; margin: 0 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo-row">
+      <div class="logo-icon">dbt</div>
+      <h1>dbt — data build tool</h1>
+    </div>
+    <div class="subtitle">Transformation SQL dans le DataWarehouse — Fiche de référence rapide</div>
+  </div>
+  <div class="header-tags">
+    <span class="tag tag-red">Transformation</span>
+    <span class="tag tag-teal">ELT / SQL</span>
+  </div>
+</div>
+
+<div class="context-box">
+  <strong>Contexte TP :</strong> dbt prend en charge la couche <strong>T</strong> de l'ELT.
+  Les données brutes MySQL/TXT/Excel/JSON sont déjà chargées en PostgreSQL (staging).
+  dbt construit les dimensions et la table de faits avec du SQL versionné et testé.
+</div>
+
+<!-- PHILOSOPHIE : ETL vs ELT -->
+<div class="section-title">ETL vs ELT — quelle différence avec votre pipeline actuel ?</div>
+<div class="card red">
+  <div class="card-title">Repositionnement de la transformation</div>
+  <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; font-size: 12px;">
+    <div>
+      <div style="color: var(--muted); font-size: 10px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px;">ETL (votre pipeline Python)</div>
+      <div style="background:var(--bg3); border-radius:6px; padding:10px; border:1px solid var(--border); line-height:2;">
+        <div>MySQL / TXT / Excel / JSON</div>
+        <div style="color:var(--dbt-red);">→ Transform Python</div>
+        <div style="color:var(--green);">→ Load PostgreSQL</div>
+      </div>
+    </div>
+    <div style="color:var(--muted); font-size:20px;">vs</div>
+    <div>
+      <div style="color: var(--muted); font-size: 10px; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px;">ELT avec dbt</div>
+      <div style="background:var(--bg3); border-radius:6px; padding:10px; border:1px solid var(--border); line-height:2;">
+        <div>MySQL / TXT / Excel / JSON</div>
+        <div style="color:var(--blue);">→ Load brut PostgreSQL</div>
+        <div style="color:var(--green);">→ dbt Transform SQL</div>
+      </div>
+    </div>
+  </div>
+  <div class="note" style="margin-top:10px;">
+    <strong>Avantage dbt :</strong> les transformations sont en SQL pur, versionnées dans Git, documentées et testées automatiquement. Pas de boîte noire Python.
+  </div>
+</div>
+
+<!-- STRUCTURE PROJET -->
+<div class="section-title">Structure d'un projet dbt</div>
+<div class="grid grid-2">
+  <div class="card yellow">
+    <div class="card-title">Arborescence type</div>
+    <div class="tree">
+      <div><span class="dir">dwh_imprimantes/</span></div>
+      <div>├── <span class="dir">models/</span></div>
+      <div>│   ├── <span class="dir">staging/</span>      <span class="desc">← données brutes nettoyées</span></div>
+      <div>│   │   ├── <span class="file">stg_ventes.sql</span></div>
+      <div>│   │   └── <span class="file">stg_clients.sql</span></div>
+      <div>│   └── <span class="dir">marts/</span>        <span class="desc">← dimensions + faits</span></div>
+      <div>│       ├── <span class="file">dim_vendeur.sql</span></div>
+      <div>│       ├── <span class="file">dim_client.sql</span></div>
+      <div>│       └── <span class="file">fait_ventes.sql</span></div>
+      <div>├── <span class="dir">tests/</span>            <span class="desc">← tests SQL custom</span></div>
+      <div>├── <span class="dir">macros/</span>           <span class="desc">← fonctions Jinja réutilisables</span></div>
+      <div>├── <span class="file">dbt_project.yml</span>  <span class="desc">← config projet</span></div>
+      <div>└── <span class="file">profiles.yml</span>    <span class="desc">← connexion DB</span></div>
+    </div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">Matérialisations</div>
+    <div class="mat-grid">
+      <div class="mat-row">
+        <span class="mat-badge mat-view">view</span>
+        <span class="mat-desc">Vue SQL — recalculée à chaque requête. Légère, pour staging.</span>
+      </div>
+      <div class="mat-row">
+        <span class="mat-badge mat-table">table</span>
+        <span class="mat-desc">Table physique recréée à chaque run. Pour dimensions.</span>
+      </div>
+      <div class="mat-row">
+        <span class="mat-badge mat-increm">incremental</span>
+        <span class="mat-desc">Ajoute seulement les nouvelles lignes. Pour faits volumineux.</span>
+      </div>
+      <div class="mat-row">
+        <span class="mat-badge mat-ephem">ephemeral</span>
+        <span class="mat-desc">CTE injecté — aucune table créée. Intermédiaire pur.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODELS SQL ANNOTÉS -->
+<div class="section-title">Modèles dbt — exemples TP imprimantes</div>
+<div class="grid grid-2">
+  <div class="card green">
+    <div class="card-title">staging/stg_ventes.sql</div>
+<pre><span class="c">-- Nettoyage de la table brute MySQL</span>
+<span class="j">{{</span> config(materialized=<span class="s">'view'</span>) <span class="j">}}</span>
+
+<span class="k">SELECT</span>
+    id_vente,
+    id_vendeur,
+    id_client,
+    id_produit,
+    <span class="c">-- Transformation : cast de date</span>
+    date_commande::DATE      <span class="k">AS</span> date_commande,
+    date_precommande::DATE   <span class="k">AS</span> date_precommande,
+    quantite,
+    <span class="c">-- Valeur métier : flag précommande</span>
+    montant_vente::NUMERIC   <span class="k">AS</span> montant_vente,
+    CASE
+        <span class="k">WHEN</span> montant_precom > <span class="nb">0</span> <span class="k">THEN</span> <span class="nb">TRUE</span>
+        <span class="k">ELSE</span> <span class="nb">FALSE</span>
+    <span class="k">END</span>                      <span class="k">AS</span> est_precommande,
+    km_parcourus,
+    frais_voyage
+<span class="k">FROM</span> <span class="j">{{</span> source(<span class="s">'raw'</span>, <span class="s">'ventes'</span>) <span class="j">}}</span>
+<span class="k">WHERE</span> montant_vente > <span class="nb">0</span>    <span class="c">-- Filtre valeurs aberrantes</span></pre>
+  </div>
+
+  <div class="card purple">
+    <div class="card-title">marts/dim_vendeur.sql</div>
+<pre><span class="c">-- Dimension vendeur avec attributs enrichis</span>
+<span class="j">{{</span> config(
+    materialized=<span class="s">'table'</span>,
+    schema=<span class="s">'marts'</span>
+) <span class="j">}}</span>
+
+<span class="k">SELECT</span>
+    <span class="c">-- Clé surrogate générée par dbt</span>
+    <span class="j">{{</span> dbt_utils.generate_surrogate_key([<span class="s">'id_vendeur'</span>]) <span class="j">}}</span>
+        <span class="k">AS</span> id_dim_vendeur,
+    id_vendeur                    <span class="k">AS</span> id_source,
+    <span class="c">-- Normalisation noms</span>
+    UPPER(TRIM(nom))              <span class="k">AS</span> nom,
+    INITCAP(TRIM(prenom))         <span class="k">AS</span> prenom,
+    INITCAP(prenom)||<span class="s">' '</span>||UPPER(nom)
+                                  <span class="k">AS</span> nom_complet,
+    salaire::NUMERIC(10,2),
+    date_embauche::DATE,
+    ville_base,
+    <span class="c">-- Transformation : catégorisation ancienneté</span>
+    CASE
+        <span class="k">WHEN</span> groupe = <span class="s">'Junior'</span>  <span class="k">THEN</span> <span class="nb">1</span>
+        <span class="k">WHEN</span> groupe = <span class="s">'Senior'</span>  <span class="k">THEN</span> <span class="nb">2</span>
+        <span class="k">WHEN</span> groupe = <span class="s">'Expert'</span>  <span class="k">THEN</span> <span class="nb">3</span>
+    <span class="k">END</span>                           <span class="k">AS</span> rang_groupe
+<span class="k">FROM</span> <span class="j">{{</span> ref(<span class="s">'stg_vendeurs'</span>) <span class="j">}}</span></pre>
+  </div>
+</div>
+
+<!-- TABLE DE FAITS INCRÉMENTALE -->
+<div class="card teal">
+  <div class="card-title">marts/fait_ventes.sql — modèle incrémental</div>
+<pre><span class="j">{{</span> config(
+    materialized=<span class="s">'incremental'</span>,
+    unique_key=<span class="s">'id_vente'</span>,              <span class="c">-- Clé de déduplication</span>
+    incremental_strategy=<span class="s">'merge'</span>
+) <span class="j">}}</span>
+
+<span class="k">SELECT</span>
+    v.id_vente,
+    t.id_dim_temps,
+    vd.id_dim_vendeur,
+    c.id_dim_client,
+    p.id_dim_produit,
+    v.quantite,
+    v.montant_vente,
+    <span class="c">-- Mesure calculée : marge estimée (règle métier 60% de coût)</span>
+    v.montant_vente - (p.prix_unitaire * v.quantite * <span class="nb">0.60</span>) <span class="k">AS</span> marge_estimee,
+    v.km_parcourus,
+    v.frais_voyage,
+    <span class="c">-- Rentabilité nette</span>
+    (v.montant_vente - (p.prix_unitaire * v.quantite * <span class="nb">0.60</span>))
+    - v.frais_voyage                             <span class="k">AS</span> rentabilite_nette
+<span class="k">FROM</span> <span class="j">{{</span> ref(<span class="s">'stg_ventes'</span>) <span class="j">}}</span>          v
+<span class="k">JOIN</span> <span class="j">{{</span> ref(<span class="s">'dim_temps'</span>) <span class="j">}}</span>           t  <span class="k">ON</span> t.date_complete = v.date_commande
+<span class="k">JOIN</span> <span class="j">{{</span> ref(<span class="s">'dim_vendeur'</span>) <span class="j">}}</span>        vd <span class="k">ON</span> vd.id_source = v.id_vendeur
+<span class="k">JOIN</span> <span class="j">{{</span> ref(<span class="s">'dim_client'</span>) <span class="j">}}</span>         c  <span class="k">ON</span> c.id_source = v.id_client
+<span class="k">JOIN</span> <span class="j">{{</span> ref(<span class="s">'dim_produit'</span>) <span class="j">}}</span>        p  <span class="k">ON</span> p.id_dim_produit = v.id_produit
+
+<span class="j">{%</span> <span class="k">if</span> is_incremental() <span class="j">%}</span>
+<span class="c">-- En mode incrémental : seulement les nouvelles lignes</span>
+<span class="k">WHERE</span> v.date_commande > (<span class="k">SELECT</span> <span class="k">MAX</span>(date_commande) <span class="k">FROM</span> <span class="j">{{</span> this <span class="j">}}</span>)
+<span class="j">{%</span> <span class="k">endif</span> <span class="j">%}</span></pre>
+</div>
+
+<!-- TESTS + COMMANDES -->
+<div class="grid grid-2">
+  <div class="card orange">
+    <div class="card-title">Tests dbt — schema.yml</div>
+<pre><span class="n">version</span>: <span class="nb">2</span>
+<span class="n">models</span>:
+  - <span class="n">name</span>: dim_vendeur
+    <span class="n">columns</span>:
+      - <span class="n">name</span>: id_dim_vendeur
+        <span class="n">tests</span>:
+          - <span class="f">unique</span>         <span class="c"># Pas de doublons</span>
+          - <span class="f">not_null</span>       <span class="c"># Jamais NULL</span>
+      - <span class="n">name</span>: groupe
+        <span class="n">tests</span>:
+          - <span class="f">accepted_values</span>:
+              <span class="n">values</span>: [<span class="s">'Junior'</span>,<span class="s">'Senior'</span>,<span class="s">'Expert'</span>]
+
+  - <span class="n">name</span>: fait_ventes
+    <span class="n">columns</span>:
+      - <span class="n">name</span>: id_dim_vendeur
+        <span class="n">tests</span>:
+          - <span class="f">relationships</span>:  <span class="c"># Intégrité référentielle</span>
+              <span class="n">to</span>: ref(<span class="s">'dim_vendeur'</span>)
+              <span class="n">field</span>: id_dim_vendeur</pre>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">Commandes CLI essentielles</div>
+    <table class="cmd-table">
+      <tr><td class="cmd">dbt init dwh_imprimantes</td><td class="desc">Crée un nouveau projet dbt</td></tr>
+      <tr><td class="cmd">dbt debug</td><td class="desc">Vérifie la connexion PostgreSQL</td></tr>
+      <tr><td class="cmd">dbt run</td><td class="desc">Exécute tous les modèles</td></tr>
+      <tr><td class="cmd">dbt run --select dim_vendeur</td><td class="desc">Exécute un modèle précis</td></tr>
+      <tr><td class="cmd">dbt run --select staging.*</td><td class="desc">Exécute un dossier entier</td></tr>
+      <tr><td class="cmd">dbt test</td><td class="desc">Exécute tous les tests</td></tr>
+      <tr><td class="cmd">dbt docs generate</td><td class="desc">Génère la documentation</td></tr>
+      <tr><td class="cmd">dbt docs serve</td><td class="desc">Ouvre la doc dans le navigateur</td></tr>
+      <tr><td class="cmd">dbt lineage</td><td class="desc">Affiche le graphe de dépendances</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- JINJA + MACROS -->
+<div class="card red">
+  <div class="card-title">Fonctions Jinja essentielles dans les modèles</div>
+  <div class="grid grid-3" style="gap: 10px; margin-top: 4px;">
+    <div>
+      <pre style="margin:0;"><span class="j">{{</span> ref(<span class="s">'dim_vendeur'</span>) <span class="j">}}</span></pre>
+      <div style="font-size:11px; color:var(--muted); margin-top:4px;">Référence un autre modèle dbt — crée la dépendance automatiquement</div>
+    </div>
+    <div>
+      <pre style="margin:0;"><span class="j">{{</span> source(<span class="s">'raw'</span>, <span class="s">'ventes'</span>) <span class="j">}}</span></pre>
+      <div style="font-size:11px; color:var(--muted); margin-top:4px;">Référence une table source brute déclarée dans sources.yml</div>
+    </div>
+    <div>
+      <pre style="margin:0;"><span class="j">{{</span> config(materialized=<span class="s">'table'</span>) <span class="j">}}</span></pre>
+      <div style="font-size:11px; color:var(--muted); margin-top:4px;">Configure le modèle (matérialisation, schéma, tags…)</div>
+    </div>
+  </div>
+</div>
+
+<!-- AIRFLOW + DBT -->
+<div class="card green">
+  <div class="card-title">Intégration Airflow + dbt — le combo parfait</div>
+<pre><span class="c"># Dans votre DAG Airflow — remplacer PythonOperator transform par :</span>
+<span class="k">from</span> airflow.operators.bash <span class="k">import</span> BashOperator
+
+<span class="v">dbt_run</span> = BashOperator(
+    task_id=<span class="s">'dbt_transform'</span>,
+    bash_command=<span class="s">'cd /opt/dwh_imprimantes && dbt run --profiles-dir .'</span>,
+)
+
+<span class="v">dbt_test</span> = BashOperator(
+    task_id=<span class="s">'dbt_test'</span>,
+    bash_command=<span class="s">'cd /opt/dwh_imprimantes && dbt test'</span>,
+)
+
+<span class="c"># Ordre : extraire → charger brut → dbt run → dbt test → rapport</span>
+<span class="v">extraire_sources</span> >> <span class="v">charger_brut</span> >> <span class="v">dbt_run</span> >> <span class="v">dbt_test</span></pre>
+  <div class="note">
+    <strong>Pattern recommandé :</strong> Airflow = orchestrateur (QUAND et dans quel ordre), dbt = transformateur (COMMENT les données sont structurées). Les deux sont complémentaires, pas redondants.
+  </div>
+</div>
+
+<div class="footer">
+  <span>TP DataWarehouse — Référence dbt Core</span>
+  <a href="https://docs.getdbt.com">docs.getdbt.com</a>
+</div>
+
+</body>
+</html>

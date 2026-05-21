@@ -1,0 +1,8 @@
+n8n= agent IA no miasa
+manao projet mampiasa air flow na dbt
+Ny air flow dev kokoa
+dbt sql
+Automatisation no tena andrasana, misy declencheur mazava tsara ve ao anatiny, mitombona tsara ve ny donnees
+avoka avec visualisation
+Projet mampiasa etl
+Ny tena andrasana de ilay declencheur, izy par etape, declencheurs maromaro, automatises
