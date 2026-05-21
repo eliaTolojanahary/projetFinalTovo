@@ -36,6 +36,16 @@
       });
       // trigger initial change
       rselect.dispatchEvent(new Event('change'));
+      // initial load for first station
+      const firstStation = sselect.value;
+      if(firstStation){
+        // prefer overview hours mapping
+        const p = document.getElementById('periodSelect');
+        let hours = 24;
+        if(p){ const pv = parseInt(p.value,10); hours = (pv>48)?168:pv; }
+        renderHourlyCharts(firstStation, hours);
+        loadOverview(firstStation);
+      }
     }).catch(err=>{console.error('Failed load regions', err)});
   }
 
@@ -54,8 +64,8 @@
       const humid = rows.map(r=>r.relative_humidity_2m || r.humidity);
       const precip = rows.map(r=>r.precipitation || r.precipitation_1h || 0);
 
-      // Temperature chart
-      const tctx = document.getElementById('tempChart');
+      // Temperature chart (historique)
+      const tctx = document.getElementById('hist_tempChart') || document.getElementById('tempChart');
       if(tctx){
         if(tctx._chart) tctx._chart.destroy();
         tctx._chart = makeChart(tctx, {
@@ -65,8 +75,8 @@
         });
       }
 
-      // Precip chart
-      const pctx = document.getElementById('precipChart');
+      // Precip chart (historique)
+      const pctx = document.getElementById('hist_precipChart') || document.getElementById('precipChart') || document.getElementById('rainChart');
       if(pctx){
         if(pctx._chart) pctx._chart.destroy();
         pctx._chart = makeChart(pctx, {
@@ -76,8 +86,8 @@
         });
       }
 
-      // Humidity chart
-      const hctx = document.getElementById('humidityChart');
+      // Humidity chart (historique)
+      const hctx = document.getElementById('hist_humidityChart') || document.getElementById('humidityChart');
       if(hctx){
         if(hctx._chart) hctx._chart.destroy();
         hctx._chart = makeChart(hctx, {
@@ -112,20 +122,71 @@
     }).catch(err=>console.error('daily load',err));
   }
 
+  function loadOverview(stationId){
+    if(!stationId) return;
+    // current
+    fetchJSON(`${api.stations}${stationId}/current`).then(current=>{
+      if(current){
+        const t = current.temperature_2m || current.temperature_2m;
+        const h = current.relative_humidity_2m || current.humidity || '';
+        const p = current.precipitation || current.rain || 0;
+        const w = current.wind_speed_10m || '';
+        const pres = current.surface_pressure || '';
+        document.getElementById('metricTemp')?.replaceChildren(t===null? '--' : String(t));
+        document.getElementById('metricHumidity')?.replaceChildren(h===null? '--' : String(h));
+        document.getElementById('metricRain')?.replaceChildren(p===null? '--' : String(p));
+        document.getElementById('metricWind')?.replaceChildren(w===null? '--' : String(w));
+        document.getElementById('metricPressure')?.replaceChildren(pres===null? '--' : String(pres));
+        // station short info
+        const si = document.getElementById('stationInfo');
+        if(si){ si.innerHTML = `<div class="station-pill">Station ID: ${stationId}</div>`; }
+      }
+    }).catch(err=>{console.debug('no current',err)});
+
+    // report
+    fetchJSON(`${api.stations}${stationId}/report-today/`).then(report=>{
+      if(report){ document.getElementById('reportData')?.replaceChildren(report.summary_text || 'Pas de rapport'); }
+    }).catch(err=>{ document.getElementById('reportData')?.replaceChildren('Pas de rapport'); });
+
+    // alerts
+    fetchJSON(`${api.stations}${stationId}/active-alerts/`).then(alerts=>{
+      const ul = document.getElementById('alertsList');
+      if(!ul) return;
+      ul.innerHTML = '';
+      if(Array.isArray(alerts) && alerts.length){
+        alerts.forEach(a=>{
+          const li = document.createElement('li'); li.textContent = `${a.niveau || ''} - ${a.message || a.type_alerte || 'Alerte'}`; ul.appendChild(li);
+        });
+      } else {
+        ul.innerHTML = '<li>Aucune alerte</li>';
+      }
+    }).catch(err=>{ console.debug('alerts err',err); });
+  }
+
   function init(){
     populateRegions();
-    const refresh = document.getElementById('refreshBtn');
+    const refresh = document.getElementById('refreshBtn') || document.getElementById('refreshButton');
     if(!refresh) return;
     refresh.addEventListener('click', ()=>{
       const s = document.getElementById('stationSelect');
       if(!s || !s.value) return alert('Sélectionnez une station');
       const stationId = s.value;
-      // decide page type
-      if(document.getElementById('tempChart')){
-        const hours = document.getElementById('hoursSelect').value || 24;
+      // decide page type: historique vs tendances
+      if(document.getElementById('hist_tempChart') || document.getElementById('tempChart')){
+        // hours: prefer hoursSelect, fallback to periodSelect mapping
+        let hours = 24;
+        const hsel = document.getElementById('hoursSelect');
+        if(hsel && hsel.value) hours = hsel.value;
+        else{
+          const p = document.getElementById('periodSelect');
+          if(p){ const pv = parseInt(p.value,10); hours = (pv>48)?168:pv; }
+        }
         renderHourlyCharts(stationId, hours);
-      } else if(document.getElementById('dailyTempChart')){
-        const days = document.getElementById('daysSelect').value || 7;
+      }
+      if(document.getElementById('dailyTempChart')){
+        let days = 7;
+        const dsel = document.getElementById('daysSelect');
+        if(dsel && dsel.value) days = dsel.value;
         renderDailyCharts(stationId, days);
       }
     });

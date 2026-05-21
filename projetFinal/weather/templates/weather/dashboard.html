@@ -26,6 +26,12 @@
       </div>
     </header>
 
+    <nav class="tabs">
+      <button class="tab-btn active" data-target="tabOverview">Vue générale</button>
+      <button class="tab-btn" data-target="tabHistorique">Historique</button>
+      <button class="tab-btn" data-target="tabTendances">Tendances</button>
+    </nav>
+
     <section class="toolbar card">
       <div class="field-group">
         <label for="regionSelect">Région</label>
@@ -48,7 +54,8 @@
       </div>
     </section>
 
-    <main class="layout-grid">
+    <div id="tabOverview">
+      <main class="layout-grid">
       <aside class="sidebar card">
         <div class="sidebar-section">
           <h2>Station active</h2>
@@ -111,8 +118,65 @@
           <article class="card chart-card"><div class="section-heading"><h2>Pression</h2><p>Variation de surface</p></div><canvas id="pressureChart"></canvas></article>
         </section>
       </section>
-    </main>
+      </main>
+    </div>
+
+    <div id="tabHistorique" class="hidden-tab">
+      <section class="toolbar card">
+        <div class="field-group"><label for="hoursSelect">Période</label>
+          <select id="hoursSelect"><option value="24">24h</option><option value="48">48h</option><option value="72">72h</option></select>
+        </div>
+        <div class="toolbar-actions"><button id="refreshBtn" type="button">Rafraîchir historique</button></div>
+      </section>
+      <main class="visualization-grid">
+        <section class="card">
+          <h3>Température (24h)</h3>
+          <canvas id="hist_tempChart"></canvas>
+        </section>
+        <section class="card">
+          <h3>Précipitation (24h)</h3>
+          <canvas id="hist_precipChart"></canvas>
+        </section>
+        <section class="card">
+          <h3>Humidité (24h)</h3>
+          <canvas id="hist_humidityChart"></canvas>
+        </section>
+      </main>
+    </div>
+
+    <div id="tabTendances" class="hidden-tab">
+      <section class="toolbar card">
+        <div class="field-group"><label for="daysSelect">Période</label>
+          <select id="daysSelect"><option value="7">7 jours</option><option value="14">14 jours</option></select>
+        </div>
+        <div class="toolbar-actions"><button id="refreshBtnT" type="button">Rafraîchir tendances</button></div>
+      </section>
+      <main class="visualization-grid">
+        <section class="card"><h3>Température (jours)</h3><canvas id="dailyTempChart"></canvas></section>
+        <section class="card"><h3>Précipitation (jours)</h3><canvas id="dailyPrecipChart"></canvas></section>
+        <section class="card"><h3>Humidité (jours)</h3><canvas id="dailyHumidityChart"></canvas></section>
+      </main>
+    </div>
   </div>
-  <script src="{% static 'weather/js/dashboard.js' %}"></script>
+  <script src="{% static 'weather/js/visualization.js' %}"></script>
+  <script>
+    // Tab switching logic
+    (function(){
+      const tabs = document.querySelectorAll('.tab-btn');
+      function hideAll(){ document.querySelectorAll('#tabOverview, #tabHistorique, #tabTendances').forEach(el=>el.style.display='none'); }
+      tabs.forEach(btn=>btn.addEventListener('click', ()=>{
+        tabs.forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        hideAll();
+        document.getElementById(btn.dataset.target).style.display = 'block';
+      }));
+      // initial state
+      hideAll(); document.getElementById('tabOverview').style.display = 'block';
+
+      // link global refresh to visualization refresh buttons
+      const globalRefresh = document.getElementById('refreshButton');
+      if(globalRefresh){ globalRefresh.addEventListener('click', ()=>{ document.getElementById('refreshBtn')?.click(); document.getElementById('refreshBtnT')?.click(); }); }
+    })();
+  </script>
 </body>
 </html>
