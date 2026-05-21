@@ -14,9 +14,38 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
+from weather.views import (
+    ClimateTypeViewSet,
+    RegionViewSet,
+    ApiSourceViewSet,
+    UnitViewSet,
+    VariableViewSet,
+    WeatherStationViewSet,
+    WeatherHourlyViewSet,
+    WeatherDailyViewSet,
+    WeatherReportViewSet,
+    AlertViewSet
+)
+
+# Initialisation du routeur automatique de DRF
+router = DefaultRouter()
+
+# Enregistrement des routes pour chaque ViewSet
+router.register(r'climate-types', ClimateTypeViewSet, basename='climatetype')
+router.register(r'regions', RegionViewSet, basename='region')
+router.register(r'api-sources', ApiSourceViewSet, basename='apisource')
+router.register(r'units', UnitViewSet, basename='unit')
+router.register(r'variables', VariableViewSet, basename='variable')
+router.register(r'weather-stations', WeatherStationViewSet, basename='weatherstation')
+router.register(r'weather-hourly', WeatherHourlyViewSet, basename='weatherhourly')
+router.register(r'weather-daily', WeatherDailyViewSet, basename='weatherdaily')
+router.register(r'weather-reports', WeatherReportViewSet, basename='weatherreport')
+router.register(r'alerts', AlertViewSet, basename='alert')
+
+# Les URLs de l'application incluent toutes les routes générées par le routeur
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('', include(router.urls)),
 ]
