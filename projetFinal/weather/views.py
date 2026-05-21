@@ -1,6 +1,10 @@
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter, SearchFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils import timezone
+from datetime import timedelta
 
 from .models import (
     ClimateType,
@@ -17,10 +21,12 @@ from .models import (
 from .serializers import (
     ClimateTypeSerializer,
     RegionSerializer,
+    RegionWithStationSerializer,
     ApiSourceSerializer,
     UnitSerializer,
     VariableSerializer,
     WeatherStationSerializer,
+    WeatherStationSummarySerializer,
     WeatherHourlySerializer,
     WeatherDailySerializer,
     WeatherReportSerializer,
@@ -56,6 +62,12 @@ class RegionViewSet(viewsets.ModelViewSet):
     search_fields = ['nom_region', 'chef_lieu']
     ordering_fields = ['nom_region', 'created_at']
     ordering = ['nom_region']
+
+    @action(detail=False, methods=['get'], url_path='with-station')
+    def with_station(self, request):
+        queryset = self.get_queryset().select_related('climate_type')
+        serializer = RegionWithStationSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class ApiSourceViewSet(viewsets.ModelViewSet):
@@ -95,6 +107,72 @@ class WeatherStationViewSet(viewsets.ModelViewSet):
     search_fields = ['nom_station']
     ordering_fields = ['nom_station', 'altitude', 'created_at']
     ordering = ['nom_station']
+
+    @action(detail=True, methods=['get'], url_path='current')
+    def current(self, request, pk=None):
+        station = self.get_object()
+        latest = (
+            WeatherHourly.objects
+            .filter(station=station)
+            .select_related('station', 'source_api')
+            .order_by('-date_heure')
+            .first()
+        )
+        if latest is None:
+            return Response({"detail": "Aucune donnée horaire trouvée pour cette station."}, status=404)
+        return Response(WeatherHourlySerializer(latest).data)
+
+    @action(detail=True, methods=['get'], url_path='hourly-history')
+    def hourly_history(self, request, pk=None):
+        station = self.get_object()
+        hours = int(request.query_params.get('hours', 24))
+        since = timezone.now() - timedelta(hours=hours)
+        queryset = (
+            WeatherHourly.objects
+            .filter(station=station, date_heure__gte=since)
+            .select_related('station', 'source_api')
+            .order_by('-date_heure')
+        )
+        return Response(WeatherHourlySerializer(queryset, many=True).data)
+
+    @action(detail=True, methods=['get'], url_path='daily-trend')
+    def daily_trend(self, request, pk=None):
+        station = self.get_object()
+        days = int(request.query_params.get('days', 7))
+        since = timezone.localdate() - timedelta(days=days - 1)
+        queryset = (
+            WeatherDaily.objects
+            .filter(station=station, date__gte=since)
+            .select_related('station', 'source_api')
+            .order_by('-date')
+        )
+        return Response(WeatherDailySerializer(queryset, many=True).data)
+
+    @action(detail=True, methods=['get'], url_path='report-today')
+    def report_today(self, request, pk=None):
+        station = self.get_object()
+        today = timezone.localdate()
+        report = (
+            WeatherReport.objects
+            .filter(station=station, date=today)
+            .select_related('station')
+            .first()
+        )
+        if report is None:
+            return Response({"detail": "Aucun rapport trouvé pour aujourd'hui."}, status=404)
+        return Response(WeatherReportSerializer(report).data)
+
+    @action(detail=True, methods=['get'], url_path='active-alerts')
+    def active_alerts(self, request, pk=None):
+        station = self.get_object()
+        since = timezone.now() - timedelta(days=1)
+        queryset = (
+            Alert.objects
+            .filter(station=station, date_heure__gte=since)
+            .select_related('station')
+            .order_by('-date_heure')
+        )
+        return Response(AlertSerializer(queryset, many=True).data)
 
 
 # =========================================================
