@@ -134,10 +134,9 @@ Ces fichiers sont créés une seule fois et chargés en base au démarrage.
 - [] Export PDF du rapport (optionnel)
 
 ### Phase 6 — Rafraîchissement des données
-
-- [ ] Mettre en place un polling automatique (AJAX / HTMX) pour la météo actuelle
-- [ ] Afficher la date/heure de dernière mise à jour
-- [ ] Indicateur de statut du pipeline (dernière exécution Airflow)
+- [X] Mettre en place un polling automatique (AJAX / HTMX) pour la météo actuelle
+- [X] Afficher la date/heure de dernière mise à jour
+- [X] Indicateur de statut du pipeline (dernière exécution Airflow)
 
 ### Phase 7 — UI / UX
 
