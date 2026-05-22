@@ -120,7 +120,8 @@ class WeatherStationViewSet(viewsets.ModelViewSet):
             .first()
         )
         if latest is None:
-            return Response({"detail": "Aucune donnée horaire trouvée pour cette station."}, status=404)
+            # return empty object (200) so frontend can handle absence without 404 network error
+            return Response({})
         return Response(WeatherHourlySerializer(latest).data)
 
     @action(detail=True, methods=['get'], url_path='hourly-history')
@@ -158,7 +159,8 @@ class WeatherStationViewSet(viewsets.ModelViewSet):
             .first()
         )
         if report is None:
-            return Response({"detail": "Aucun rapport trouvé pour cette station."}, status=404)
+            # return empty object so frontend can handle gracefully without 404
+            return Response({})
         return Response(WeatherReportSerializer(report).data)
 
     @action(detail=True, methods=['get'], url_path='active-alerts')

@@ -6,7 +6,7 @@
   };
 
   function fetchJSON(url){
-    return fetch(url).then(r=>r.json());
+    return fetch(url).then(r=>{ if(!r.ok) return null; return r.json(); }).catch(()=>null);
   }
 
   function populateRegions(){
@@ -125,24 +125,32 @@
   function loadOverview(stationId){
     if(!stationId) return;
     // current
-    fetchJSON(`${api.stations}${stationId}/current`).then(current=>{
+    fetchJSON(`${api.stations}${stationId}/current/`).then(current=>{
+      const setText = (id, v)=>{ const el = document.getElementById(id); if(!el) return; el.textContent = (v===null||v===undefined)? '--' : String(v); };
       if(current){
         const t = current.temperature_2m || current.temperature_2m;
         const h = current.relative_humidity_2m || current.humidity || '';
         const p = current.precipitation || current.rain || 0;
         const w = current.wind_speed_10m || '';
         const pres = current.surface_pressure || '';
-          const setText = (id, v)=>{ const el = document.getElementById(id); if(!el) return; el.textContent = (v===null||v===undefined)? '--' : String(v); };
-          setText('metricTemp', t);
-          setText('metricHumidity', h);
-          setText('metricRain', p);
-          setText('metricWind', w);
-          setText('metricPressure', pres);
+        setText('metricTemp', t);
+        setText('metricHumidity', h);
+        setText('metricRain', p);
+        setText('metricWind', w);
+        setText('metricPressure', pres);
         // station short info
         const si = document.getElementById('stationInfo');
         if(si){ si.innerHTML = `<div class="station-pill">Station ID: ${stationId}</div>`; }
+      } else {
+        // clear metrics when no current available
+        setText('metricTemp', null);
+        setText('metricHumidity', null);
+        setText('metricRain', null);
+        setText('metricWind', null);
+        setText('metricPressure', null);
+        const si = document.getElementById('stationInfo'); if(si) si.innerHTML = `<div class="station-pill">Station ID: ${stationId}</div>`;
       }
-    }).catch(err=>{console.debug('no current',err)});
+    }).catch(err=>{console.debug('no current',err); const setText = (id, v)=>{ const el = document.getElementById(id); if(!el) return; el.textContent = (v===null||v===undefined)? '--' : String(v); }; setText('metricTemp', null); setText('metricHumidity', null); setText('metricRain', null); setText('metricWind', null); setText('metricPressure', null); });
 
     // report
     fetchJSON(`${api.stations}${stationId}/report-today/`).then(report=>{
@@ -190,6 +198,20 @@
         const dsel = document.getElementById('daysSelect');
         if(dsel && dsel.value) days = dsel.value;
         renderDailyCharts(stationId, days);
+      }
+    });
+    // when station changes, update overview and charts automatically
+    document.addEventListener('change', (e)=>{
+      if(e.target && e.target.id === 'stationSelect'){
+        const sid = e.target.value;
+        if(!sid) return;
+        // update overview
+        loadOverview(sid);
+        // update charts according to selected period
+        const p = document.getElementById('periodSelect');
+        let hours = 24;
+        if(p){ const pv = parseInt(p.value,10); hours = (pv>48)?168:pv; }
+        renderHourlyCharts(sid, hours);
       }
     });
   }
