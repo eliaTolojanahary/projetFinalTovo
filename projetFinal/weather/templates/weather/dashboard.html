@@ -54,6 +54,17 @@
       </div>
     </section>
 
+    <section id="analysisPanel" class="analysis-panel hidden-tab">
+      <div class="card analysis-shell">
+        <div class="section-heading">
+          <h2 id="analysisTitle">Analyse</h2>
+          <p id="analysisSubtitle">Chargement…</p>
+        </div>
+        <div id="analysisLoading" class="analysis-loading">Chargement de la page…</div>
+        <iframe id="analysisFrame" class="analysis-frame" title="Analyse météo"></iframe>
+      </div>
+    </section>
+
     <div id="tabOverview">
       <main class="layout-grid">
       <aside class="sidebar card">
@@ -153,74 +164,92 @@
       </section>
       </main>
     </div>
-
-    <div id="tabHistorique" class="hidden-tab">
-      <section class="toolbar card">
-        <div class="field-group"><label for="hoursSelect">Période</label>
-          <select id="hoursSelect"><option value="24">24h</option><option value="48">48h</option><option value="72">72h</option></select>
-        </div>
-        <div class="toolbar-actions"><button id="refreshBtn" type="button">Rafraîchir historique</button></div>
-      </section>
-      <main class="visualization-grid">
-        <section class="card">
-          <h3>Température (24h)</h3>
-          <canvas id="hist_tempChart"></canvas>
-        </section>
-        <section class="card">
-          <h3>Précipitation (24h)</h3>
-          <canvas id="hist_precipChart"></canvas>
-        </section>
-        <section class="card">
-          <h3>Humidité (24h)</h3>
-          <canvas id="hist_humidityChart"></canvas>
-        </section>
-      </main>
-    </div>
-
-    <div id="tabTendances" class="hidden-tab">
-      <section class="toolbar card">
-        <div class="field-group"><label for="daysSelect">Période</label>
-          <select id="daysSelect"><option value="7">7 jours</option><option value="14">14 jours</option></select>
-        </div>
-        <div class="toolbar-actions"><button id="refreshBtnT" type="button">Rafraîchir tendances</button></div>
-      </section>
-      <main class="visualization-grid">
-        <section class="card"><h3>Température (jours)</h3><canvas id="dailyTempChart"></canvas></section>
-        <section class="card"><h3>Précipitation (jours)</h3><canvas id="dailyPrecipChart"></canvas></section>
-        <section class="card"><h3>Humidité (jours)</h3><canvas id="dailyHumidityChart"></canvas></section>
-      </main>
-    </div>
   </div>
   <script src="{% static 'weather/js/dashboard.js' %}"></script>
   <script src="{% static 'weather/js/dashboard-fixes.js' %}"></script>
   <script src="{% static 'weather/js/reports.js' %}"></script>
   <script>
-    // Tabs: keep the dashboard on Vue générale and open dedicated pages for analyses.
+    // Tabs: keep the dashboard on Vue générale and load dedicated analyses through AJAX.
     (function(){
       const tabs = document.querySelectorAll('.tab-btn');
+      const overview = document.getElementById('tabOverview');
+      const analysisPanel = document.getElementById('analysisPanel');
+      const analysisFrame = document.getElementById('analysisFrame');
+      const analysisTitle = document.getElementById('analysisTitle');
+      const analysisSubtitle = document.getElementById('analysisSubtitle');
+      const analysisLoading = document.getElementById('analysisLoading');
+
+      const pages = {
+        tabHistorique: {
+          url: '/visualization/historique/',
+          title: 'Historique — Visualisation',
+          subtitle: 'Historique horaire de la station sélectionnée.'
+        },
+        tabTendances: {
+          url: '/visualization/tendances/',
+          title: 'Tendances — Visualisation',
+          subtitle: 'Évolution journalière de la station sélectionnée.'
+        }
+      };
+
+      function showOverview() {
+        overview.style.display = 'block';
+        analysisPanel.style.display = 'none';
+      }
+
+      function injectBaseHref(html) {
+        const baseHref = `${window.location.origin}/`;
+        if (/<base\s/i.test(html)) {
+          return html;
+        }
+        return html.replace(/<head([^>]*)>/i, `<head$1><base href="${baseHref}">`);
+      }
+
+      async function loadAnalysisPage(tabId) {
+        const page = pages[tabId];
+        if (!page) {
+          showOverview();
+          return;
+        }
+
+        overview.style.display = 'none';
+        analysisPanel.style.display = 'block';
+        analysisTitle.textContent = page.title;
+        analysisSubtitle.textContent = page.subtitle;
+        analysisLoading.style.display = 'block';
+
+        const response = await fetch(page.url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const html = await response.text();
+        analysisFrame.onload = () => {
+          analysisLoading.style.display = 'none';
+        };
+        analysisFrame.srcdoc = injectBaseHref(html);
+      }
+
       tabs.forEach(btn=>btn.addEventListener('click', ()=>{
         tabs.forEach(b=>b.classList.remove('active'));
         btn.classList.add('active');
         if (btn.dataset.target === 'tabOverview') {
-          document.getElementById('tabOverview').style.display = 'block';
-          document.getElementById('tabHistorique').style.display = 'none';
-          document.getElementById('tabTendances').style.display = 'none';
+          showOverview();
           return;
         }
 
-        const targetUrl = btn.dataset.target === 'tabHistorique'
-          ? '/visualization/historique/'
-          : '/visualization/tendances/';
-        window.location.href = targetUrl;
+        loadAnalysisPage(btn.dataset.target).catch(() => {
+          showOverview();
+        });
       }));
       // initial state
-      document.getElementById('tabOverview').style.display = 'block';
-      document.getElementById('tabHistorique').style.display = 'none';
-      document.getElementById('tabTendances').style.display = 'none';
+      showOverview();
 
-      // link global refresh to visualization refresh buttons
+      // Refresh the current analysis page when it is visible.
       const globalRefresh = document.getElementById('refreshButton');
-      if(globalRefresh){ globalRefresh.addEventListener('click', ()=>{ document.getElementById('refreshBtn')?.click(); document.getElementById('refreshBtnT')?.click(); }); }
+      if(globalRefresh){
+        globalRefresh.addEventListener('click', ()=>{
+          if (analysisPanel.style.display === 'block' && analysisFrame.srcdoc) {
+            analysisFrame.contentWindow?.location?.reload();
+          }
+        });
+      }
     })();
   </script>
 </body>
