@@ -40,6 +40,8 @@ function initMap() {
     maxZoom: 18,
     attribution: '&copy; OpenStreetMap'
   }).addTo(state.map);
+  // expose for other scripts
+  window.dashboardMap = state.map;
 }
 
 function clearMarkers() {
