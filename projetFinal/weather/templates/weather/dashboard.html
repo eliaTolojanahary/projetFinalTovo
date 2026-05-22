@@ -205,7 +205,7 @@
         return html.replace(/<head([^>]*)>/i, `<head$1><base href="${baseHref}">`);
       }
 
-      async function loadAnalysisPage(tabId) {
+      async function loadAnalysisPage(tabId, state) {
         const page = pages[tabId];
         if (!page) {
           showOverview();
@@ -218,12 +218,44 @@
         analysisSubtitle.textContent = page.subtitle;
         analysisLoading.style.display = 'block';
 
-        const response = await fetch(page.url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-        const html = await response.text();
-        analysisFrame.onload = () => {
+        // merge state into query params
+        const params = new URLSearchParams();
+        if (state) {
+          if (state.regionId) params.set('region', state.regionId);
+          if (state.stationId) params.set('station', state.stationId);
+          if (state.period) params.set('period', state.period);
+          if (state.hours) params.set('hours', state.hours);
+          if (state.days) params.set('days', state.days);
+        }
+
+        const url = params.toString() ? `${page.url}?${params.toString()}` : page.url;
+        // fetch server-rendered HTML and inject a script with the parent state so srcdoc can access it
+        let html = '';
+        try {
+          const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          html = await response.text();
+        } catch (err) {
+          console.error('Failed to load analysis page', err);
+          analysisSubtitle.textContent = 'Erreur de chargement de la page d\'analyse.';
           analysisLoading.style.display = 'none';
-        };
-        analysisFrame.srcdoc = injectBaseHref(html);
+          // keep overview visible as fallback
+          showOverview();
+          return;
+        }
+
+        const injectedState = state ? JSON.stringify(state).replace(/</g,'\\u003c') : '{}';
+        const stateScript = `<script>window.__PARENT_STATE = ${injectedState};<\/script>`;
+        let docWithState = html;
+        if (/<head([^>]*)>/i.test(html)) {
+          docWithState = html.replace(/<head([^>]*)>/i, `<head$1>${stateScript}`);
+        } else {
+          // fallback: prepend script if no head tag
+          docWithState = stateScript + html;
+        }
+
+        analysisFrame.onload = () => { analysisLoading.style.display = 'none'; };
+        analysisFrame.srcdoc = injectBaseHref(docWithState);
       }
 
       tabs.forEach(btn=>btn.addEventListener('click', ()=>{
@@ -240,6 +272,36 @@
       }));
       // initial state
       showOverview();
+
+      // postMessage: send dashboard state to iframe child
+      function getParentState(){
+        const regionId = document.getElementById('regionSelect')?.value || '';
+        const stationId = document.getElementById('stationSelect')?.value || '';
+        const period = document.getElementById('periodSelect')?.value || '';
+        const hours = document.getElementById('hoursSelect')?.value || '';
+        const days = document.getElementById('daysSelect')?.value || '';
+        return { regionId, stationId, period, hours, days };
+      }
+
+      // debounce reloads to avoid too many fetches
+      let _reloadTimer = null;
+      function sendParentState(){
+        if(!analysisFrame || !analysisPanel) return;
+        if(analysisPanel.style.display !== 'block') return;
+        const st = getParentState();
+        // reload the current analysis page with the state as query params
+        const active = [...document.querySelectorAll('.tab-btn')].find(b => b.classList.contains('active'));
+        const tabId = active?.dataset?.target;
+        if(!tabId || !pages[tabId]) return;
+        clearTimeout(_reloadTimer);
+        _reloadTimer = setTimeout(()=>{ loadAnalysisPage(tabId, st).catch(()=>{}); }, 250);
+      }
+
+      // forward selects changes to the iframe (AJAX reload) when analysis panel is visible
+      ['regionSelect','stationSelect','periodSelect','hoursSelect','daysSelect'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.addEventListener('change', ()=>{ sendParentState(); });
+      });
 
       // Refresh the current analysis page when it is visible.
       const globalRefresh = document.getElementById('refreshButton');

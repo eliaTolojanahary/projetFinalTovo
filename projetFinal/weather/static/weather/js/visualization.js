@@ -275,5 +275,84 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  // allow parent dashboard to control this page via postMessage
+  let _parentPendingState = null;
+  function applyParentState(state){
+    if(!state) return;
+    const rselect = document.getElementById('regionSelect');
+    const sselect = document.getElementById('stationSelect');
+    const hoursSelect = document.getElementById('hoursSelect');
+    const daysSelect = document.getElementById('daysSelect');
+    const periodSelect = document.getElementById('periodSelect');
+
+    // if selects are not yet populated, store pending and return
+    if(rselect && rselect.options.length === 0){
+      _parentPendingState = state;
+      return;
+    }
+
+    if(state.regionId && rselect){ rselect.value = state.regionId; rselect.dispatchEvent(new Event('change', {bubbles:true})); }
+    if(state.stationId && sselect){
+      // station options may be populated after region change; try set, else defer
+      const opt = Array.from(sselect.options).find(o => String(o.value) === String(state.stationId));
+      if(opt){ sselect.value = state.stationId; sselect.dispatchEvent(new Event('change', {bubbles:true})); }
+      else {
+        // wait a short time for stations to populate
+        setTimeout(()=>{ const opt2 = Array.from(sselect.options).find(o => String(o.value) === String(state.stationId)); if(opt2){ sselect.value = state.stationId; sselect.dispatchEvent(new Event('change', {bubbles:true})); if(sselect.value) renderForSelectedPage(sselect.value); } }, 300);
+      }
+    }
+
+    if(periodSelect && state.period){ periodSelect.value = state.period; }
+    if(hoursSelect && state.hours){ hoursSelect.value = state.hours; }
+    if(daysSelect && state.days){ daysSelect.value = state.days; }
+
+    // trigger rendering based on station
+    if(state.stationId){ renderForSelectedPage(state.stationId); }
+  }
+
+  window.addEventListener('message', (ev)=>{
+    try{
+      if(ev.origin !== window.location.origin) return;
+    }catch(e){ /* ignore */ }
+    const msg = ev.data || {};
+    if(msg && msg.type === 'parentState'){
+      applyParentState(msg.state);
+    }
+  });
+
+  // notify parent we're ready to receive state
+  function notifyParentReady(){
+    if(window.parent && window.parent !== window){
+      try{ window.parent.postMessage({type:'childReady'}, window.location.origin); }catch(e){}
+    }
+  }
+
+  // when regions are populated, apply any pending parent state
+  const _origPopulateRegions = populateRegions;
+  populateRegions = function(){
+    _origPopulateRegions();
+    // small timeout to allow population to finish
+    setTimeout(()=>{ if(_parentPendingState){ applyParentState(_parentPendingState); _parentPendingState = null; } }, 400);
+  };
+
+  // also read state from query params (when dashboard passes via ?station=...)
+  function readStateFromQuery(){
+    const params = new URLSearchParams(window.location.search);
+    const regionId = params.get('region');
+    const stationId = params.get('station');
+    const period = params.get('period');
+    const hours = params.get('hours');
+    const days = params.get('days');
+    const has = regionId || stationId || period || hours || days;
+    return has ? { regionId, stationId, period, hours, days } : null;
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    // priority: injected parent state (srcdoc) -> query params -> none
+    const injected = window.__PARENT_STATE || null;
+    const qstate = readStateFromQuery();
+    if(injected && Object.keys(injected).length){ _parentPendingState = injected; }
+    else if(qstate){ _parentPendingState = qstate; }
+    init(); notifyParentReady();
+  });
 })();
