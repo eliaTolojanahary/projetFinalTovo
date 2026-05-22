@@ -1,10 +1,8 @@
 -- =========================================================
 -- WEATHER ANALYTICS MADAGASCAR
--- FINAL POSTGRESQL SCHEMA
+-- Create the database separately before running this script.
 -- SIMPLIFIED VERSION
 -- =========================================================
-
-CREATE DATABASE IF NOT EXISTS weather;
 
 -- =========================================================
 -- TABLE : climate_types
@@ -14,6 +12,20 @@ CREATE TABLE climate_types (
     id SERIAL PRIMARY KEY,
 
     nom_climat VARCHAR(100) NOT NULL,
+
+    description TEXT
+);
+
+-- =========================================================
+-- TABLE : timezones
+-- =========================================================
+
+CREATE TABLE timezones (
+    id SERIAL PRIMARY KEY,
+
+    timezone_name VARCHAR(100) NOT NULL UNIQUE,
+
+    utc_offset VARCHAR(20),
 
     description TEXT
 );
@@ -105,11 +117,11 @@ CREATE TABLE variables (
 );
 
 -- =========================================================
--- TABLE : weather_stations
--- 1 REGION = 1 STATION
+-- TABLE : weather_locations
+-- 1 REGION = 1 LOCATION / STATION METEO
 -- =========================================================
 
-CREATE TABLE weather_stations (
+CREATE TABLE weather_locations (
     id SERIAL PRIMARY KEY,
 
     nom_station VARCHAR(150) NOT NULL,
@@ -122,14 +134,19 @@ CREATE TABLE weather_stations (
 
     altitude NUMERIC(10,2),
 
-    timezone VARCHAR(100),
+    timezone_id INTEGER,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_station_region
         FOREIGN KEY (region_id)
         REFERENCES regions(id)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_station_timezone
+        FOREIGN KEY (timezone_id)
+        REFERENCES timezones(id)
+        ON DELETE SET NULL
 );
 
 -- =========================================================
@@ -140,7 +157,7 @@ CREATE TABLE weather_stations (
 CREATE TABLE weather_hourly (
     id BIGSERIAL PRIMARY KEY,
 
-    station_id INTEGER NOT NULL,
+    location_id INTEGER NOT NULL,
 
     date_heure TIMESTAMP NOT NULL,
 
@@ -168,9 +185,9 @@ CREATE TABLE weather_hourly (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_hourly_station
-        FOREIGN KEY (station_id)
-        REFERENCES weather_stations(id)
+    CONSTRAINT fk_hourly_location
+        FOREIGN KEY (location_id)
+        REFERENCES weather_locations(id)
         ON DELETE CASCADE,
 
     CONSTRAINT fk_hourly_api
@@ -187,7 +204,7 @@ CREATE TABLE weather_hourly (
 CREATE TABLE weather_daily (
     id BIGSERIAL PRIMARY KEY,
 
-    station_id INTEGER NOT NULL,
+    location_id INTEGER NOT NULL,
 
     date DATE NOT NULL,
 
@@ -217,9 +234,9 @@ CREATE TABLE weather_daily (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_daily_station
-        FOREIGN KEY (station_id)
-        REFERENCES weather_stations(id)
+    CONSTRAINT fk_daily_location
+        FOREIGN KEY (location_id)
+        REFERENCES weather_locations(id)
         ON DELETE CASCADE,
 
     CONSTRAINT fk_daily_api
@@ -236,7 +253,7 @@ CREATE TABLE weather_daily (
 CREATE TABLE weather_report (
     id BIGSERIAL PRIMARY KEY,
 
-    station_id INTEGER NOT NULL,
+    location_id INTEGER NOT NULL,
 
     date DATE NOT NULL,
 
@@ -260,9 +277,9 @@ CREATE TABLE weather_report (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_report_station
-        FOREIGN KEY (station_id)
-        REFERENCES weather_stations(id)
+    CONSTRAINT fk_report_location
+        FOREIGN KEY (location_id)
+        REFERENCES weather_locations(id)
         ON DELETE CASCADE
 );
 
@@ -274,7 +291,7 @@ CREATE TABLE weather_report (
 CREATE TABLE alerts (
     id BIGSERIAL PRIMARY KEY,
 
-    station_id INTEGER NOT NULL,
+    location_id INTEGER NOT NULL,
 
     date_heure TIMESTAMP NOT NULL,
 
@@ -286,9 +303,9 @@ CREATE TABLE alerts (
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_alert_station
-        FOREIGN KEY (station_id)
-        REFERENCES weather_stations(id)
+    CONSTRAINT fk_alert_location
+        FOREIGN KEY (location_id)
+        REFERENCES weather_locations(id)
         ON DELETE CASCADE
 );
 
@@ -299,26 +316,26 @@ CREATE TABLE alerts (
 CREATE INDEX idx_regions_nom
 ON regions(nom_region);
 
-CREATE INDEX idx_weather_hourly_station
-ON weather_hourly(station_id);
+CREATE INDEX idx_weather_hourly_location
+ON weather_hourly(location_id);
 
 CREATE INDEX idx_weather_hourly_datetime
 ON weather_hourly(date_heure);
 
-CREATE INDEX idx_weather_daily_station
-ON weather_daily(station_id);
+CREATE INDEX idx_weather_daily_location
+ON weather_daily(location_id);
 
 CREATE INDEX idx_weather_daily_date
 ON weather_daily(date);
 
-CREATE INDEX idx_weather_report_station
-ON weather_report(station_id);
+CREATE INDEX idx_weather_report_location
+ON weather_report(location_id);
 
 CREATE INDEX idx_weather_report_date
 ON weather_report(date);
 
-CREATE INDEX idx_alerts_station
-ON alerts(station_id);
+CREATE INDEX idx_alerts_location
+ON alerts(location_id);
 
 CREATE INDEX idx_alerts_datetime
 ON alerts(date_heure);
@@ -330,8 +347,8 @@ ON alerts(date_heure);
 COMMENT ON TABLE regions IS
 'Regions de Madagascar';
 
-COMMENT ON TABLE weather_stations IS
-'1 station meteo principale par region';
+COMMENT ON TABLE weather_locations IS
+'1 location / station meteo principale par region';
 
 COMMENT ON TABLE weather_hourly IS
 'Donnees meteo horaires venant des APIs';
@@ -350,7 +367,7 @@ COMMENT ON TABLE alerts IS
 -- =========================================================
 --
 -- regions
--- weather_stations
+-- weather_locations
 -- weather_hourly
 -- weather_daily
 -- weather_report

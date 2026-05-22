@@ -29,9 +29,7 @@ Ces fichiers sont créés une seule fois et chargés en base au démarrage.
 
 ### Phase 1 — Mise en place de l'environnement
 
-- [ ] Créer le dépôt Git et la structure du projet
-- [ ] Configurer l'environnement Python (virtualenv / requirements.txt)
-- [ ] Installer et configurer Apache Airflow (local)
+- [ ] Installer et configurer Apache Airflow (local, python) 
 - [ ] Installer PostgreSQL et créer la base `weather_madagascar`
 - [ ] Rédiger `schema.sql` — création de toutes les tables MVP
 - [ ] Rédiger `config.yaml` — paramètres du pipeline
