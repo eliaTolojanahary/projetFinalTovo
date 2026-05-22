@@ -131,7 +131,7 @@ Ces fichiers sont créés une seule fois et chargés en base au démarrage.
 
 - [X] Page **rapports météo** : liste des rapports générés par date et par région
 - [X] Vue détail d'un rapport : tous les indicateurs + résumé textuel
-- [X] Export PDF du rapport (optionnel)
+- [] Export PDF du rapport (optionnel)
 
 ### Phase 6 — Rafraîchissement des données
 
