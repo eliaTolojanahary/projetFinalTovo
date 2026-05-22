@@ -27,6 +27,12 @@
   let activeTabId  = null;
   let reloadTimer  = null;
 
+  window.reloadCurrentAnalysisTab = () => {
+    if (activeTabId) loadTab(activeTabId);
+  };
+
+  window.getActiveAnalysisTabId = () => activeTabId;
+
   // Lit l'état courant exposé par dashboard.js
   function getState() {
     return typeof window.getDashboardState === 'function'
