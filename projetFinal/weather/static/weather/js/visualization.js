@@ -338,11 +338,21 @@
   let _parentPendingState = null;
   function applyParentState(state){
     if(!state) return;
+    setPageState(state);
     const rselect = document.getElementById('regionSelect');
     const sselect = document.getElementById('stationSelect');
     const hoursSelect = document.getElementById('hoursSelect');
     const daysSelect = document.getElementById('daysSelect');
     const periodSelect = document.getElementById('periodSelect');
+
+    // Pages without controls should render immediately from the received request state.
+    if(!rselect && !sselect){
+      const stationId = state.stationId || pageState.stationId;
+      if(stationId){
+        renderForSelectedPage(stationId);
+      }
+      return;
+    }
 
     // if selects are not yet populated, store pending and return
     if(rselect && rselect.options.length === 0){

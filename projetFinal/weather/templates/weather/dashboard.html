@@ -178,6 +178,7 @@
       const analysisTitle = document.getElementById('analysisTitle');
       const analysisSubtitle = document.getElementById('analysisSubtitle');
       const analysisLoading = document.getElementById('analysisLoading');
+      let activeAnalysisTab = null;
 
       const pages = {
         tabHistorique: {
@@ -256,12 +257,14 @@
 
         analysisFrame.onload = () => { analysisLoading.style.display = 'none'; };
         analysisFrame.srcdoc = injectBaseHref(docWithState);
+        activeAnalysisTab = tabId;
       }
 
       tabs.forEach(btn=>btn.addEventListener('click', ()=>{
         tabs.forEach(b=>b.classList.remove('active'));
         btn.classList.add('active');
         if (btn.dataset.target === 'tabOverview') {
+          activeAnalysisTab = null;
           showOverview();
           return;
         }
@@ -283,18 +286,17 @@
         return { regionId, stationId, period, hours, days };
       }
 
-      // debounce reloads to avoid too many fetches
+      // debounce AJAX reloads to avoid too many fetches
       let _reloadTimer = null;
       function sendParentState(){
         if(!analysisFrame || !analysisPanel) return;
         if(analysisPanel.style.display !== 'block') return;
+        if(!activeAnalysisTab || !pages[activeAnalysisTab]) return;
         const st = getParentState();
-        // reload the current analysis page with the state as query params
-        const active = [...document.querySelectorAll('.tab-btn')].find(b => b.classList.contains('active'));
-        const tabId = active?.dataset?.target;
-        if(!tabId || !pages[tabId]) return;
         clearTimeout(_reloadTimer);
-        _reloadTimer = setTimeout(()=>{ loadAnalysisPage(tabId, st).catch(()=>{}); }, 250);
+        _reloadTimer = setTimeout(()=>{
+          loadAnalysisPage(activeAnalysisTab, st).catch(()=>{});
+        }, 250);
       }
 
       // forward selects changes to the iframe (AJAX reload) when analysis panel is visible
@@ -307,11 +309,18 @@
       const globalRefresh = document.getElementById('refreshButton');
       if(globalRefresh){
         globalRefresh.addEventListener('click', ()=>{
-          if (analysisPanel.style.display === 'block' && analysisFrame.srcdoc) {
-            analysisFrame.contentWindow?.location?.reload();
+          if (analysisPanel.style.display === 'block') {
+            sendParentState();
           }
         });
       }
+
+      window.addEventListener('message', (event) => {
+        if (event.origin !== window.location.origin) return;
+        if (event.data?.type === 'childReady' && analysisPanel.style.display === 'block') {
+          sendParentState();
+        }
+      });
     })();
   </script>
 </body>
