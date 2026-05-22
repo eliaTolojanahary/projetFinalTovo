@@ -24,7 +24,16 @@
             marker.bindPopup(`<strong>${st.nom_station}</strong><div>${r.nom_region}</div>`);
             marker.on('click', ()=>{
               const sel = document.getElementById('stationSelect');
-              if(sel){ sel.value = st.id; sel.dispatchEvent(new Event('change')); }
+              if(sel){
+                // ensure option exists
+                let opt = Array.from(sel.options).find(o=>String(o.value)===String(st.id));
+                if(!opt){ opt = document.createElement('option'); opt.value = st.id; opt.textContent = st.nom_station || `Station ${st.id}`; sel.appendChild(opt); }
+                sel.value = st.id;
+                sel.dispatchEvent(new Event('change'));
+                // also render wind/pressure immediately for UX
+                const p = document.getElementById('periodSelect'); let hours = 24; if(p){ const pv = parseInt(p.value,10); hours = (pv>48)?168:pv; }
+                try{ renderWindPressure(st.id, hours); }catch(e){ console.debug('renderWindPressure err', e); }
+              }
               document.getElementById('refreshButton')?.click();
             });
             marker.addTo(allMarkers);
@@ -55,6 +64,13 @@
       const coords = (window.dashboardRegionCoords && window.dashboardRegionCoords[regionId]) || [];
       if(coords.length===1){ map.setView(coords[0], 10); }
       else if(coords.length>1){ const bounds = L.latLngBounds(coords); map.fitBounds(bounds, {padding:[40,40]}); }
+    });
+    // when stationSelect changes, render wind/pressure automatically
+    document.addEventListener('change', (e)=>{
+      if(!e.target || e.target.id !== 'stationSelect') return;
+      const sid = e.target.value; if(!sid) return;
+      const p = document.getElementById('periodSelect'); let hours = 24; if(p){ const pv = parseInt(p.value,10); hours = (pv>48)?168:pv; }
+      renderWindPressure(sid, hours);
     });
   }
 
