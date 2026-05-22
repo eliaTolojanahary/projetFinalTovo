@@ -9,21 +9,52 @@
     if(!mapEl) return;
     const map = L.map(mapEl).setView([-18.9,47.5], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom: 18}).addTo(map);
+    // store markers and region coordinates to enable focusing
+    const allMarkers = L.layerGroup().addTo(map);
+    const regionCoords = {}; // regionId -> array of [lat,lon]
     fetchJSON(regionsUrl).then(data=>{
       if(!Array.isArray(data)) return;
       data.forEach(r=>{
-        if(r.station && r.station.latitude && r.station.longitude){
-          const lat = parseFloat(r.station.latitude);
-          const lon = parseFloat(r.station.longitude);
-          const marker = L.circleMarker([lat,lon],{radius:8,fillColor:'#4ba3ff',color:'#fff',weight:1,fillOpacity:0.9}).addTo(map);
-          marker.bindPopup(`<strong>${r.station.nom_station}</strong><div>${r.nom_region}</div>`);
-          marker.on('click', ()=>{
-            const sel = document.getElementById('stationSelect');
-            if(sel){ sel.value = r.station.id; sel.dispatchEvent(new Event('change')); }
-            document.getElementById('refreshButton')?.click();
-          });
-        }
+        const stations = Array.isArray(r.station) ? r.station : (r.station ? [r.station] : []);
+        stations.forEach(st=>{
+          if(st && st.latitude && st.longitude){
+            const lat = parseFloat(st.latitude);
+            const lon = parseFloat(st.longitude);
+            const marker = L.circleMarker([lat,lon],{radius:8,fillColor:'#4ba3ff',color:'#fff',weight:1,fillOpacity:0.9});
+            marker.bindPopup(`<strong>${st.nom_station}</strong><div>${r.nom_region}</div>`);
+            marker.on('click', ()=>{
+              const sel = document.getElementById('stationSelect');
+              if(sel){ sel.value = st.id; sel.dispatchEvent(new Event('change')); }
+              document.getElementById('refreshButton')?.click();
+            });
+            marker.addTo(allMarkers);
+            if(r.id){ regionCoords[r.id] = regionCoords[r.id] || []; regionCoords[r.id].push([lat,lon]); }
+          }
+        });
       });
+      // expose map and regionCoords for other scripts
+      window.dashboardMap = map;
+      window.dashboardRegionCoords = regionCoords;
+    }).catch(()=>{
+      window.dashboardMap = map;
+      window.dashboardRegionCoords = {};
+    });
+
+    // focus map when regionSelect changes
+    document.addEventListener('change', (e)=>{
+      if(!e.target || e.target.id !== 'regionSelect') return;
+      const regionId = e.target.value;
+      // if no selection, fit all markers
+      if(!regionId){
+        const all = [];
+        Object.values(window.dashboardRegionCoords || {}).forEach(arr=> arr.forEach(p=> all.push(p)));
+        if(all.length){ const bounds = L.latLngBounds(all); map.fitBounds(bounds.pad ? bounds.pad(0.2) : bounds, {padding:[50,50]}); }
+        else map.setView([-18.9,47.5],5);
+        return;
+      }
+      const coords = (window.dashboardRegionCoords && window.dashboardRegionCoords[regionId]) || [];
+      if(coords.length===1){ map.setView(coords[0], 10); }
+      else if(coords.length>1){ const bounds = L.latLngBounds(coords); map.fitBounds(bounds, {padding:[40,40]}); }
     });
   }
 
