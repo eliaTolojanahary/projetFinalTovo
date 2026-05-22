@@ -15,6 +15,17 @@
 </head>
 <body>
   <div class="dashboard-shell">
+    <div id="newDataPopup" class="new-data-popup" style="display:none;" role="alert" aria-live="polite">
+      <div class="new-data-popup__inner">
+        <div class="new-data-popup__icon"></div>
+        <div class="new-data-popup__text">
+          <strong>Nouvelles données disponibles</strong>
+          <span id="newDataDetail">Airflow vient de mettre à jour la station.</span>
+        </div>
+        <button id="newDataRefreshBtn" type="button" class="new-data-popup__btn">Rafraîchir</button>
+        <button id="newDataDismissBtn" type="button" class="new-data-popup__dismiss" aria-label="Fermer">✕</button>
+      </div>
+    </div>
 
     <header class="topbar">
       <div>

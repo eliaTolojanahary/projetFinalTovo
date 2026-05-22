@@ -29,6 +29,74 @@ const state = {
   charts: {}
 };
 
+let _sseSource = null;
+
+function stopSSE() {
+  if (_sseSource) {
+    _sseSource.close();
+    _sseSource = null;
+  }
+}
+
+function showNewDataPopup(payload) {
+  const popup = document.getElementById('newDataPopup');
+  const detail = document.getElementById('newDataDetail');
+  if (!popup || !detail) return;
+
+  if (payload?.date_heure) {
+    detail.textContent = `Mesure du ${new Date(payload.date_heure).toLocaleString('fr-FR')} disponible.`;
+  } else {
+    detail.textContent = 'Airflow vient de mettre à jour la station.';
+  }
+
+  popup.style.display = 'block';
+}
+
+function hideNewDataPopup() {
+  const popup = document.getElementById('newDataPopup');
+  if (popup) popup.style.display = 'none';
+}
+
+function bindPopupEvents() {
+  document.getElementById('newDataRefreshBtn')?.addEventListener('click', async () => {
+    hideNewDataPopup();
+    await loadDashboardData();
+    if (typeof window.reloadCurrentAnalysisTab === 'function') {
+      window.reloadCurrentAnalysisTab();
+    }
+  });
+
+  document.getElementById('newDataDismissBtn')?.addEventListener('click', () => {
+    hideNewDataPopup();
+  });
+}
+
+function startSSE() {
+  if (typeof EventSource === 'undefined') return;
+
+  stopSSE();
+
+  const stationId = state.activeStationId;
+  const url = stationId
+    ? `/weather/stream/?station=${encodeURIComponent(stationId)}`
+    : '/weather/stream/';
+
+  _sseSource = new EventSource(url);
+
+  _sseSource.onmessage = (event) => {
+    try {
+      const payload = JSON.parse(event.data);
+      showNewDataPopup(payload);
+    } catch (error) {
+      console.warn('SSE payload invalide', event.data);
+    }
+  };
+
+  _sseSource.onerror = () => {
+    console.warn('[SSE] Connexion perdue, reconnexion automatique...');
+  };
+}
+
 // Expose state for tabs.js
 window.getDashboardState = () => ({
   region:  state.activeRegionId,
@@ -302,6 +370,7 @@ function bindEvents() {
     );
     if (filtered.length) fitMap(filtered);
     await loadDashboardData();
+    startSSE();
   });
 
   document.getElementById('stationSelect').addEventListener('change', async e => {
@@ -313,6 +382,7 @@ function bindEvents() {
       if (r) r.value = state.activeRegionId;
     }
     await loadDashboardData();
+    startSSE();
   });
 
   document.getElementById('periodSelect').addEventListener('change', async e => {
@@ -328,6 +398,10 @@ function bindEvents() {
 window.addEventListener('DOMContentLoaded', async () => {
   initMap();
   bindEvents();
+  bindPopupEvents();
   await loadRegionsAndStations();
   await loadDashboardData();
+  startSSE();
 });
+
+window.addEventListener('beforeunload', stopSSE);

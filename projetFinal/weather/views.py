@@ -1,3 +1,9 @@
+import json
+import select
+
+import psycopg2
+from django.conf import settings
+from django.http import StreamingHttpResponse
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -41,6 +47,59 @@ from .filters import (
     WeatherReportFilter,
     AlertFilter
 )
+
+
+def _get_pg_connection():
+    """Open a raw PostgreSQL connection for LISTEN/NOTIFY streaming."""
+    db = settings.DATABASES['default']
+    return psycopg2.connect(
+        dbname=db['NAME'],
+        user=db['USER'],
+        password=db['PASSWORD'],
+        host=db.get('HOST') or 'localhost',
+        port=db.get('PORT') or 5432,
+    )
+
+
+def weather_sse(request):
+    """Server-Sent Events endpoint for weather insert notifications."""
+    station_id = request.GET.get('station')
+
+    def event_stream():
+        conn = _get_pg_connection()
+        conn.autocommit = True
+        cur = conn.cursor()
+        cur.execute('LISTEN new_weather_data;')
+
+        try:
+            while True:
+                ready = select.select([conn], [], [], 30)[0]
+
+                if ready:
+                    conn.poll()
+                    while conn.notifies:
+                        notif = conn.notifies.pop(0)
+                        payload = json.loads(notif.payload)
+
+                        if station_id and str(payload.get('station_id')) != str(station_id):
+                            continue
+
+                        yield f"data: {json.dumps(payload)}\n\n"
+                else:
+                    yield ': heartbeat\n\n'
+        except GeneratorExit:
+            pass
+        finally:
+            try:
+                cur.close()
+                conn.close()
+            except Exception:
+                pass
+
+    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+    response['Cache-Control'] = 'no-cache'
+    response['X-Accel-Buffering'] = 'no'
+    return response
 
 # =========================================================
 # VIEWS / VIEWSETS DE CONFIGURATION ET CONFIGURATION MÉTÉO
