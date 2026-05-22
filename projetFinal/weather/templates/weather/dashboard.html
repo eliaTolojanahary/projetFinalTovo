@@ -71,6 +71,10 @@
           <h2>Rapport du jour</h2>
           <p id="reportData" class="report-text">Sélectionnez une station</p>
         </div>
+        <div class="sidebar-section">
+          <h2>Autres rapports</h2>
+          <ul id="dashboardReportsList" class="report-list"></ul>
+        </div>
       </aside>
 
       <section class="content-area">
@@ -108,6 +112,15 @@
             <p>Repère visuel des stations sélectionnées et de leur région.</p>
           </div>
           <div id="map"></div>
+        </section>
+
+        <section id="reportHighlight" class="card" style="margin-top:16px;">
+          <div class="section-heading"><h2>Rapport mis en avant</h2><p>Rapport sélectionné via les filtres</p></div>
+          <div id="highlightContent" style="padding:12px;">
+            <h3 id="highlightTitle">Aucun rapport sélectionné</h3>
+            <p id="highlightSummary" class="report-text">Utilisez les filtres pour sélectionner un rapport.</p>
+            <div id="highlightIndicators" style="display:flex;gap:12px;margin-top:12px;"></div>
+          </div>
         </section>
 
         <section class="charts-grid">
@@ -181,6 +194,7 @@
   </div>
   <script src="{% static 'weather/js/visualization.js' %}"></script>
   <script src="{% static 'weather/js/dashboard-fixes.js' %}"></script>
+  <script src="{% static 'weather/js/reports.js' %}"></script>
   <script>
     // Tab switching logic
     (function(){

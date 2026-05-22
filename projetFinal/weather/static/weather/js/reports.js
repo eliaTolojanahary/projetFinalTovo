@@ -87,5 +87,53 @@
   document.addEventListener('DOMContentLoaded', ()=>{
     if(document.getElementById('reportsList')) initList();
     if(window.location.pathname.startsWith('/reports/')) initDetail();
+    // Dashboard integration: list and highlight
+    if(document.getElementById('dashboardReportsList') || document.getElementById('highlightContent')){
+      initDashboardIntegration();
+    }
   });
+
+  // --- Dashboard integration functions ---
+  async function initDashboardIntegration(){
+    const listEl = document.getElementById('dashboardReportsList');
+    const highlightTitle = document.getElementById('highlightTitle');
+    const highlightSummary = document.getElementById('highlightSummary');
+    const highlightIndicators = document.getElementById('highlightIndicators');
+
+    async function loadForFilters(){
+      const stationSelect = document.getElementById('stationSelect');
+      const regionSelect = document.getElementById('regionSelect');
+      const periodSelect = document.getElementById('periodSelect');
+      let url = apiReportsBase + '?ordering=-date&page_size=20';
+      if(stationSelect && stationSelect.value) url += `&station=${stationSelect.value}`;
+      else if(regionSelect && regionSelect.value) url += `&station__region=${regionSelect.value}`;
+      // optionally filter by date derived from period (take latest date)
+      const resp = await fetchJSON(url);
+      const reports = normalizeResults(resp);
+      // populate list
+      if(listEl){ listEl.innerHTML = ''; if(!reports.length) listEl.innerHTML = '<li>Aucun rapport</li>'; }
+      reports.forEach(r=>{
+        if(listEl){ const li = document.createElement('li'); li.className='report-item'; li.textContent = `${r.date} — ${r.station && r.station.nom_station ? r.station.nom_station : ('Station '+(r.station||''))}`; li.dataset.reportId = r.id; li.style.cursor='pointer'; li.addEventListener('click', ()=>{ highlightReport(r); }); listEl.appendChild(li); }
+      });
+      // auto-highlight first
+      if(reports.length) highlightReport(reports[0]);
+      else highlightReport(null);
+    }
+
+    function highlightReport(r){
+      if(!r){ if(highlightTitle) highlightTitle.textContent = 'Aucun rapport disponible'; if(highlightSummary) highlightSummary.textContent = ''; if(highlightIndicators) highlightIndicators.innerHTML=''; return; }
+      if(highlightTitle) highlightTitle.textContent = `${r.date} — ${r.station && r.station.nom_station ? r.station.nom_station : ('Station '+(r.station||''))}`;
+      if(highlightSummary) highlightSummary.textContent = r.summary_text || '';
+      if(highlightIndicators){ highlightIndicators.innerHTML = `<div class="metric-card"><strong>${r.temperature_avg||'--'}</strong><div>Temp moy</div></div><div class="metric-card"><strong>${r.precipitation_sum||'--'}</strong><div>Pluie</div></div><div class="metric-card"><strong>${r.humidity_avg||'--'}</strong><div>Humidité</div></div><div class="metric-card"><strong>${r.wind_speed_avg||'--'}</strong><div>Vent</div></div>`; }
+    }
+
+    // attach listeners to filters
+    document.getElementById('regionSelect')?.addEventListener('change', loadForFilters);
+    document.getElementById('stationSelect')?.addEventListener('change', loadForFilters);
+    document.getElementById('periodSelect')?.addEventListener('change', loadForFilters);
+    document.getElementById('refreshButton')?.addEventListener('click', loadForFilters);
+
+    // initial load
+    loadForFilters();
+  }
 })();
