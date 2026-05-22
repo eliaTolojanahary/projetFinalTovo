@@ -136,7 +136,7 @@ Ces fichiers sont créés une seule fois et chargés en base au démarrage.
 ### Phase 6 — Rafraîchissement des données
 - [X] Mettre en place un polling automatique (AJAX / HTMX) pour la météo actuelle
 - [X] Afficher la date/heure de dernière mise à jour
-- [X] Indicateur de statut du pipeline (dernière exécution Airflow)
+- [] Indicateur de statut du pipeline (dernière exécution Airflow)
 
 ### Phase 7 — UI / UX
 
