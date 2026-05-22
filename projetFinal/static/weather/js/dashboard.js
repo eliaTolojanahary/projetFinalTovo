@@ -114,7 +114,9 @@ function renderReport(report) {
 }
 
 function buildChart(canvasId, labels, values, config) {
-  const ctx = document.getElementById(canvasId).getContext('2d');
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
   if (state.charts[canvasId]) {
     state.charts[canvasId].destroy();
   }
@@ -207,10 +209,12 @@ async function loadRegionsAndStations() {
   ]);
 
   state.regions = getResults(regionsPayload);
-  state.stations = getResults(stationsPayload).map((station) => ({
-    ...station,
-    region_name: typeof station.region === 'object' ? station.region?.nom_region : station.region_name
-  }));
+  state.stations = getResults(stationsPayload).map((station) => {
+    // normalize region to id and keep region_name for display
+    const regionId = (typeof station.region === 'object') ? (station.region?.id) : station.region;
+    const regionName = (typeof station.region === 'object') ? (station.region?.nom_region) : station.region_name;
+    return { ...station, region: regionId, region_name: regionName };
+  });
 
   const regionSelect = document.getElementById('regionSelect');
   const stationSelect = document.getElementById('stationSelect');
@@ -232,7 +236,8 @@ async function loadRegionsAndStations() {
   if (state.stations.length) {
     state.activeStationId = String(state.stations[0].id);
     stationSelect.value = state.activeStationId;
-    regionSelect.value = state.stations[0].region || '';
+    state.activeRegionId = state.stations[0].region ? String(state.stations[0].region) : '';
+    regionSelect.value = state.activeRegionId;
   }
 }
 
@@ -289,11 +294,26 @@ function bindEvents() {
   document.getElementById('regionSelect').addEventListener('change', async (event) => {
     state.activeRegionId = event.target.value;
     fillStationSelect();
+    // focus map to region's stations
+    const filtered = state.stations.filter((station) => {
+      if (!state.activeRegionId) return true;
+      return String(station.region) === String(state.activeRegionId);
+    });
+    if (filtered.length) {
+      fitMapToStations(filtered);
+    }
     await loadDashboardData();
   });
 
   document.getElementById('stationSelect').addEventListener('change', async (event) => {
     state.activeStationId = event.target.value;
+    // ensure regionSelect reflects selected station's region
+    const st = state.stations.find((s) => String(s.id) === String(state.activeStationId));
+    if (st && st.region) {
+      state.activeRegionId = String(st.region);
+      const regionSelect = document.getElementById('regionSelect');
+      if (regionSelect) regionSelect.value = state.activeRegionId;
+    }
     await loadDashboardData();
   });
 

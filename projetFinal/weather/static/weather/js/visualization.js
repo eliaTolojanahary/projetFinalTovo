@@ -141,9 +141,15 @@
         setText('metricRain', p);
         setText('metricWind', w);
         setText('metricPressure', pres);
-        // station short info
+        // station short info (with dynamic id and name)
         const si = document.getElementById('stationInfo');
-        if(si){ si.innerHTML = `<div class="station-pill">Station ID: ${stationId}</div>`; }
+        if(si){
+          // fetch station details to show name
+          fetchJSON(`${api.stations}${stationId}/`).then(st =>{
+            const name = st && st.nom_station ? st.nom_station : `Station ${stationId}`;
+            si.innerHTML = `<div id="station-pill-${stationId}" class="station-pill" data-station="${stationId}">${name}</div>`;
+          }).catch(()=>{ si.innerHTML = `<div id="station-pill-${stationId}" class="station-pill" data-station="${stationId}">Station ${stationId}</div>`; });
+        }
       } else {
         // clear metrics when no current available
         setText('metricTemp', null);
@@ -151,7 +157,8 @@
         setText('metricRain', null);
         setText('metricWind', null);
         setText('metricPressure', null);
-        const si = document.getElementById('stationInfo'); if(si) si.innerHTML = `<div class="station-pill">Station ID: ${stationId}</div>`;
+        const si = document.getElementById('stationInfo');
+        if(si){ fetchJSON(`${api.stations}${stationId}/`).then(st=>{ const name = st && st.nom_station ? st.nom_station : `Station ${stationId}`; si.innerHTML = `<div id="station-pill-${stationId}" class="station-pill" data-station="${stationId}">${name}</div>`; }).catch(()=>{ si.innerHTML = `<div id="station-pill-${stationId}" class="station-pill" data-station="${stationId}">Station ${stationId}</div>`; }); }
       }
     }).catch(err=>{console.debug('no current',err); const setText = (id, v)=>{ const el = document.getElementById(id); if(!el) return; el.textContent = (v===null||v===undefined)? '--' : String(v); }; setText('metricTemp', null); setText('metricHumidity', null); setText('metricRain', null); setText('metricWind', null); setText('metricPressure', null); });
 
