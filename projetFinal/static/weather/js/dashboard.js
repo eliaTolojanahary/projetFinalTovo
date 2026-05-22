@@ -76,6 +76,15 @@ function updateMetricCards(hourly) {
   document.getElementById('metricPressure').textContent = formatNumber(latest.surface_pressure, 0);
 }
 
+function updateMetricCardsFromDaily(daily) {
+  const latest = daily[0] || {};
+  document.getElementById('metricTemp').textContent = formatNumber(latest.temperature_avg);
+  document.getElementById('metricRain').textContent = formatNumber(latest.precipitation_sum);
+  document.getElementById('metricHumidity').textContent = formatNumber(latest.relative_humidity_avg);
+  document.getElementById('metricWind').textContent = formatNumber(latest.wind_speed_avg);
+  document.getElementById('metricPressure').textContent = '--';
+}
+
 function renderStationInfo(station, region) {
   const box = document.getElementById('stationInfo');
   if (!station) {
@@ -160,6 +169,10 @@ function buildChart(canvasId, labels, values, config) {
 }
 
 function renderCharts(hourly) {
+  if (!hourly || !hourly.length) {
+    renderDailyFallbackCharts();
+    return;
+  }
   const labels = hourly.map((entry) => {
     const value = entry.date_heure || entry.date || '';
     return new Date(value).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -202,6 +215,56 @@ function renderCharts(hourly) {
   });
 
   updateMetricCards(hourly);
+}
+
+async function renderDailyFallbackCharts() {
+  if (!state.activeStationId) return;
+  const daily = getResults(await fetchJSON(`/weather-stations/${state.activeStationId}/daily-trend/?days=7`).catch(() => []));
+  if (!daily.length) return;
+
+  const rows = daily.slice().reverse();
+  const labels = rows.map((entry) => entry.date);
+  const temps = rows.map((entry) => Number(entry.temperature_avg || 0));
+  const rain = rows.map((entry) => Number(entry.precipitation_sum || 0));
+  const humidity = rows.map((entry) => Number(entry.relative_humidity_avg || 0));
+  const wind = rows.map((entry) => Number(entry.wind_speed_avg || 0));
+
+  buildChart('tempChart', labels, temps, {
+    type: 'line',
+    label: 'Température moyenne',
+    borderColor: '#4ba3ff',
+    backgroundColor: 'rgba(75,163,255,0.20)',
+    fill: true
+  });
+  buildChart('rainChart', labels, rain, {
+    type: 'bar',
+    label: 'Pluie',
+    borderColor: '#48d6d2',
+    backgroundColor: 'rgba(72,214,210,0.35)'
+  });
+  buildChart('humidityChart', labels, humidity, {
+    type: 'line',
+    label: 'Humidité',
+    borderColor: '#7ce38b',
+    backgroundColor: 'rgba(124,227,139,0.18)',
+    fill: true
+  });
+  buildChart('windChart', labels, wind, {
+    type: 'line',
+    label: 'Vent moyen',
+    borderColor: '#f4c86b',
+    backgroundColor: 'rgba(244,200,107,0.18)',
+    fill: true
+  });
+  buildChart('pressureChart', labels, labels.map(() => null), {
+    type: 'line',
+    label: 'Pression',
+    borderColor: '#a78bfa',
+    backgroundColor: 'rgba(167,139,250,0.18)',
+    fill: true
+  });
+
+  updateMetricCardsFromDaily(rows);
 }
 
 async function loadRegionsAndStations() {
@@ -279,14 +342,27 @@ async function loadDashboardData() {
   renderStationInfo(station, region);
 
   const hours = state.activeHours;
-  const [hourly, report, alerts] = await Promise.all([
+  const [current, hourly, report, alerts] = await Promise.all([
+    fetchJSON(`/weather-stations/${state.activeStationId}/current/`).catch(() => null),
     fetchJSON(`/weather-stations/${state.activeStationId}/hourly-history/?hours=${hours}`),
     fetchJSON(`/weather-stations/${state.activeStationId}/report-today/`).catch(() => null),
     fetchJSON(`/weather-stations/${state.activeStationId}/active-alerts/`).catch(() => [])
   ]);
 
   const hourlyResults = getResults(hourly);
-  renderCharts(hourlyResults);
+  if (hourlyResults.length) {
+    renderCharts(hourlyResults);
+  } else {
+    await renderDailyFallbackCharts();
+  }
+
+  if (current && Object.keys(current).length) {
+    document.getElementById('metricTemp').textContent = formatNumber(current.temperature_2m);
+    document.getElementById('metricRain').textContent = formatNumber(current.precipitation);
+    document.getElementById('metricHumidity').textContent = formatNumber(current.relative_humidity_2m);
+    document.getElementById('metricWind').textContent = formatNumber(current.wind_speed_10m);
+    document.getElementById('metricPressure').textContent = formatNumber(current.surface_pressure, 0);
+  }
   renderReport(report);
   renderAlerts(getResults(alerts));
   setLastRefresh();

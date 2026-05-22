@@ -195,18 +195,28 @@
   <script src="{% static 'weather/js/dashboard-fixes.js' %}"></script>
   <script src="{% static 'weather/js/reports.js' %}"></script>
   <script>
-    // Tab switching logic
+    // Tabs: keep the dashboard on Vue générale and open dedicated pages for analyses.
     (function(){
       const tabs = document.querySelectorAll('.tab-btn');
-      function hideAll(){ document.querySelectorAll('#tabOverview, #tabHistorique, #tabTendances').forEach(el=>el.style.display='none'); }
       tabs.forEach(btn=>btn.addEventListener('click', ()=>{
         tabs.forEach(b=>b.classList.remove('active'));
         btn.classList.add('active');
-        hideAll();
-        document.getElementById(btn.dataset.target).style.display = 'block';
+        if (btn.dataset.target === 'tabOverview') {
+          document.getElementById('tabOverview').style.display = 'block';
+          document.getElementById('tabHistorique').style.display = 'none';
+          document.getElementById('tabTendances').style.display = 'none';
+          return;
+        }
+
+        const targetUrl = btn.dataset.target === 'tabHistorique'
+          ? '/visualization/historique/'
+          : '/visualization/tendances/';
+        window.location.href = targetUrl;
       }));
       // initial state
-      hideAll(); document.getElementById('tabOverview').style.display = 'block';
+      document.getElementById('tabOverview').style.display = 'block';
+      document.getElementById('tabHistorique').style.display = 'none';
+      document.getElementById('tabTendances').style.display = 'none';
 
       // link global refresh to visualization refresh buttons
       const globalRefresh = document.getElementById('refreshButton');
