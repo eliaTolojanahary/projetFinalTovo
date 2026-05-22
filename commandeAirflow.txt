@@ -1,0 +1,120 @@
+# Commandes — Projet Weather Madagascar (Elia)
+# ================================================
+
+# ── 1. POSTGRESQL (local Windows) ──────────────────────────────
+
+# Lancer psql directement sans variable d'environnement
+psql -h localhost -p 5432 -U postgres -d weather_madagascar
+
+# Dans psql : charger le schema (utiliser / pas \)
+\i C:/Users/Admin/Documents/S6/datawarehouse/projetFinal/projetFinalTovo/projetFinal/elia/schema.sql
+
+# Vérifier les tables
+\dt
+
+# Vérifier les données
+SELECT * FROM climate_types;
+SELECT * FROM regions;
+
+# Changer le mot de passe postgres (si caractères spéciaux posent problème)
+ALTER USER postgres WITH PASSWORD 'MonMotDePasse123';
+
+
+# ── 2. PYTHON (local Windows) ──────────────────────────────────
+
+# Installer les dépendances
+pip install apache-airflow psycopg2-binary python-dotenv requests
+
+# Lancer le seed (chargement des données statiques)
+python seed.py
+
+# Lancer l'extracteur manuellement
+python extractor.py
+
+# Lancer le transformer manuellement
+python transformer.py
+
+# Lancer le reporter manuellement
+python reporter.py
+
+# Lancer le contrôle qualité
+python quality.py
+python quality.py --dry-run
+
+
+# ── 3. AIRFLOW (GitHub Codespace — Linux) ──────────────────────
+
+# Installer Airflow et dépendances
+pip install apache-airflow psycopg2-binary python-dotenv requests
+
+# Vérifier la version
+airflow version
+
+# Initialiser la base Airflow (Airflow 3.x)
+airflow db migrate
+
+# Lancer Airflow en mode standalone (tout en un)
+AIRFLOW__WEBSERVER__BASE_URL="https://<codespace-name>-8080.app.github.dev" airflow standalone
+
+# Trouver le nom du codespace
+echo $CODESPACE_NAME
+
+# Trouver le mot de passe admin généré
+cat ~/airflow/simple_auth_manager_passwords.json.generated
+
+# URL d'accès à l'interface web
+# https://<CODESPACE_NAME>-8080.app.github.dev
+
+
+# ── 4. CONFIGURATION DU DAG ────────────────────────────────────
+
+# Créer le dossier dags
+mkdir -p ~/airflow/dags
+
+# Copier le DAG
+cp /workspaces/projetFinalTovo/projetFinal/elia/dags/weather_etl_dag.py ~/airflow/dags/
+
+# Corriger les imports dépréciés (Airflow 3.x)
+sed -i 's/from airflow.operators.python import PythonOperator/from airflow.providers.standard.operators.python import PythonOperator/' ~/airflow/dags/weather_etl_dag.py
+
+# Corriger le chemin des modules Python
+sed -i 's|BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))|BASE_DIR = "/workspaces/projetFinalTovo/projetFinal/elia"|' ~/airflow/dags/weather_etl_dag.py
+
+# Corriger schedule_interval → schedule (Airflow 3.x)
+sed -i 's/schedule_interval=/schedule=/g' ~/airflow/dags/weather_etl_dag.py
+
+# Tester le DAG sans erreur
+python ~/airflow/dags/weather_etl_dag.py
+
+# Lister les DAGs détectés
+airflow dags list
+airflow dags list | grep weather
+
+# Activer les DAGs
+airflow dags unpause weather_current_dag
+airflow dags unpause weather_daily_dag
+
+# Déclencher un DAG manuellement
+airflow dags trigger weather_daily_dag
+
+
+# ── 5. POSTGRESQL (Codespace) ──────────────────────────────────
+
+# Installer PostgreSQL
+sudo apt-get update && sudo apt-get install -y postgresql postgresql-contrib
+
+# Démarrer le service
+sudo service postgresql start
+
+# Créer la base de données
+sudo -u postgres psql -c "CREATE DATABASE weather_madagascar;"
+
+# Définir le mot de passe
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'MonMotDePasse123';"
+
+# Charger le schéma
+sudo -u postgres psql -d weather_madagascar -f /workspaces/projetFinalTovo/projetFinal/elia/schema.sql
+
+# Lancer le seed dans le Codespace
+cd /workspaces/projetFinalTovo/projetFinal/elia
+python seed.py
