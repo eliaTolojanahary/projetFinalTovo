@@ -4,30 +4,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tendances — Visualisation</title>
+  <title>Tendances </title>
   <link rel="stylesheet" href="{% static 'weather/css/dashboard.css' %}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body >
-
+<body>
   <section class="visualization-grid">
     <section class="card">
       <h3>Température (min / moy / max)</h3>
       <canvas id="dailyTempChart"></canvas>
-      <p class="chart-desc">Tendances journalières des températures (°C) : min, moyenne et max pour chaque jour de la période sélectionnée.</p>
+      <p class="chart-desc">Tendances journalières des températures (°C) : min, moyenne et max.</p>
     </section>
     <section class="card">
       <h3>Précipitation (mm)</h3>
       <canvas id="dailyPrecipChart"></canvas>
-      <p class="chart-desc">Précipitation quotidienne (mm) — somme des précipitations enregistrées sur chaque jour.</p>
+      <p class="chart-desc">Somme journalière des précipitations (mm).</p>
     </section>
     <section class="card">
       <h3>Humidité (%)</h3>
       <canvas id="dailyHumidityChart"></canvas>
-      <p class="chart-desc">Humidité moyenne journalière (%) pour chaque jour de la période sélectionnée.</p>
+      <p class="chart-desc">Humidité moyenne journalière (%).</p>
     </section>
   </section>
-
   <script src="{% static 'weather/js/visualization.js' %}"></script>
 </body>
 </html>

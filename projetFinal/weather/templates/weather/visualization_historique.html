@@ -4,29 +4,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Historique — Visualisation</title>
+  <title>Historique </title>
   <link rel="stylesheet" href="{% static 'weather/css/dashboard.css' %}">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <section class="visualization-grid">
     <section class="card">
-      <h3>Température (min / moy / max)</h3>
+      <h3>Température (°C)</h3>
       <canvas id="tempChart"></canvas>
-      <p class="chart-desc">Courbe horaire de la température en °C sur la période sélectionnée. Les valeurs représentent les mesures horodatées.</p>
+      <p class="chart-desc">Courbe horaire de la température en °C sur la période sélectionnée.</p>
     </section>
     <section class="card">
       <h3>Précipitation (mm)</h3>
       <canvas id="precipChart"></canvas>
-      <p class="chart-desc">Histogramme des précipitations horaires (mm). Chaque barre représente le volume de pluie mesuré pendant l'heure correspondante.</p>
+      <p class="chart-desc">Précipitations horaires (mm) — volume mesuré par heure.</p>
     </section>
     <section class="card">
       <h3>Humidité (%)</h3>
       <canvas id="humidityChart"></canvas>
-      <p class="chart-desc">Humidité relative (%) mesurée chaque heure. Utilisez ce graphique pour observer les pics d'humidité.</p>
+      <p class="chart-desc">Humidité relative (%) mesurée chaque heure.</p>
     </section>
   </section>
-
   <script src="{% static 'weather/js/visualization.js' %}"></script>
 </body>
 </html>

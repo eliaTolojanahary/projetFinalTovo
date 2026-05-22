@@ -15,6 +15,7 @@
 </head>
 <body>
   <div class="dashboard-shell">
+
     <header class="topbar">
       <div>
         <p class="eyebrow">Weather Analytics Madagascar</p>
@@ -54,274 +55,122 @@
       </div>
     </section>
 
-    <section id="analysisPanel" class="analysis-panel hidden-tab">
+    <!-- Panneau d'analyse (Historique / Tendances) -->
+    <section id="analysisPanel" class="analysis-panel" style="display:none;">
       <div class="card analysis-shell">
         <div class="section-heading">
           <h2 id="analysisTitle">Analyse</h2>
           <p id="analysisSubtitle">Chargement…</p>
         </div>
-        <div id="analysisLoading" class="analysis-loading">Chargement de la page…</div>
+        <div id="analysisLoading" class="analysis-loading">Chargement…</div>
         <iframe id="analysisFrame" class="analysis-frame" title="Analyse météo"></iframe>
       </div>
     </section>
 
+    <!-- Vue générale -->
     <div id="tabOverview">
       <main class="layout-grid">
-      <aside class="sidebar card">
-        <div class="sidebar-section">
-          <h2>Station active</h2>
-          <div id="stationInfo" class="station-info"></div>
-        </div>
 
-        <div class="sidebar-section">
-          <h2>Alertes actives</h2>
-          <ul id="alertsList" class="alert-list"></ul>
-        </div>
-
-        <div class="sidebar-section">
-          <h2>Rapport du jour</h2>
-          <p id="reportData" class="report-text">Sélectionnez une station</p>
-        </div>
-        <div class="sidebar-section">
-          <h2>Autres rapports</h2>
-          <ul id="dashboardReportsList" class="report-list"></ul>
-        </div>
-      </aside>
-
-      <section class="content-area">
-        <section class="hero-grid">
-          <article class="metric-card accent-blue">
-            <p class="metric-label">Température</p>
-            <strong id="metricTemp">--</strong>
-            <span>°C</span>
-          </article>
-          <article class="metric-card accent-cyan">
-            <p class="metric-label">Pluie</p>
-            <strong id="metricRain">--</strong>
-            <span>mm</span>
-          </article>
-          <article class="metric-card accent-green">
-            <p class="metric-label">Humidité</p>
-            <strong id="metricHumidity">--</strong>
-            <span>%</span>
-          </article>
-          <article class="metric-card accent-gold">
-            <p class="metric-label">Vent</p>
-            <strong id="metricWind">--</strong>
-            <span>km/h</span>
-          </article>
-          <article class="metric-card accent-violet">
-            <p class="metric-label">Pression</p>
-            <strong id="metricPressure">--</strong>
-            <span>hPa</span>
-          </article>
-        </section>
-
-        <section class="map-card card">
-          <div class="section-heading">
-            <h2>Carte des stations</h2>
-            <p>Repère visuel des stations sélectionnées et de leur région.</p>
+        <aside class="sidebar card">
+          <div class="sidebar-section">
+            <h2>Station active</h2>
+            <div id="stationInfo" class="station-info"></div>
           </div>
-          <div id="map"></div>
-        </section>
-
-        <section id="reportHighlight" class="card" style="margin-top:16px;">
-          <div class="section-heading"><h2>Rapport mis en avant</h2><p>Rapport sélectionné via les filtres</p></div>
-          <div id="highlightContent" style="padding:12px;">
-            <h3 id="highlightTitle">Aucun rapport sélectionné</h3>
-            <p id="highlightSummary" class="report-text">Utilisez les filtres pour sélectionner un rapport.</p>
-            <div id="highlightIndicators" style="display:flex;gap:12px;margin-top:12px;"></div>
+          <div class="sidebar-section">
+            <h2>Alertes actives</h2>
+            <ul id="alertsList" class="alert-list"></ul>
           </div>
-        </section>
+          <div class="sidebar-section">
+            <h2>Rapport du jour</h2>
+            <p id="reportData" class="report-text">Sélectionnez une station</p>
+          </div>
+          <div class="sidebar-section">
+            <h2>Autres rapports</h2>
+            <ul id="dashboardReportsList" class="report-list"></ul>
+          </div>
+        </aside>
 
-        <section class="charts-grid">
-          <article class="card chart-card">
-            <div class="section-heading"><h2>Température</h2><p>Courbe horaire</p></div>
-            <canvas id="tempChart"></canvas>
-            <p class="chart-desc">Courbe horaire de la température en °C. Chaque point représente la mesure horaire enregistrée pour la station sélectionnée.</p>
-          </article>
-          <article class="card chart-card">
-            <div class="section-heading"><h2>Précipitations</h2><p>Volume horaire</p></div>
-            <canvas id="rainChart"></canvas>
-            <p class="chart-desc">Volume de précipitations par heure (mm). Les barres indiquent la quantité de pluie enregistrée pour chaque intervalle horaire.</p>
-          </article>
-          <article class="card chart-card">
-            <div class="section-heading"><h2>Humidité</h2><p>Évolution horaire</p></div>
-            <canvas id="humidityChart"></canvas>
-            <p class="chart-desc">Humidité relative (%) mesurée chaque heure. Utilisez ce graphique pour repérer les variations d'humidité sur la période choisie.</p>
-          </article>
-          <article class="card chart-card">
-            <div class="section-heading"><h2>Vent</h2><p>Vitesse moyenne</p></div>
-            <canvas id="windChart"></canvas>
-            <p class="chart-desc">Vitesse du vent (km/h) — valeurs horaires. Graphique utile pour détecter les périodes de vent fort.</p>
-          </article>
-          <article class="card chart-card">
-            <div class="section-heading"><h2>Pression</h2><p>Variation de surface</p></div>
-            <canvas id="pressureChart"></canvas>
-            <p class="chart-desc">Pression atmosphérique au niveau de la station (hPa), mesurée chaque heure. Les tendances peuvent indiquer des changements météorologiques.</p>
-          </article>
+        <section class="content-area">
+
+          <section class="hero-grid">
+            <article class="metric-card accent-blue">
+              <p class="metric-label">Température</p>
+              <strong id="metricTemp">--</strong><span>°C</span>
+            </article>
+            <article class="metric-card accent-cyan">
+              <p class="metric-label">Pluie</p>
+              <strong id="metricRain">--</strong><span>mm</span>
+            </article>
+            <article class="metric-card accent-green">
+              <p class="metric-label">Humidité</p>
+              <strong id="metricHumidity">--</strong><span>%</span>
+            </article>
+            <article class="metric-card accent-gold">
+              <p class="metric-label">Vent</p>
+              <strong id="metricWind">--</strong><span>km/h</span>
+            </article>
+            <article class="metric-card accent-violet">
+              <p class="metric-label">Pression</p>
+              <strong id="metricPressure">--</strong><span>hPa</span>
+            </article>
+          </section>
+
+          <section class="map-card card">
+            <div class="section-heading">
+              <h2>Carte des stations</h2>
+              <p>Repère visuel des stations sélectionnées et de leur région.</p>
+            </div>
+            <div id="map"></div>
+          </section>
+
+          <section id="reportHighlight" class="card" style="margin-top:16px;">
+            <div class="section-heading">
+              <h2>Rapport mis en avant</h2>
+              <p>Rapport sélectionné via les filtres</p>
+            </div>
+            <div id="highlightContent" style="padding:12px;">
+              <h3 id="highlightTitle">Aucun rapport sélectionné</h3>
+              <p id="highlightSummary" class="report-text">Utilisez les filtres pour sélectionner un rapport.</p>
+              <div id="highlightIndicators" style="display:flex;gap:12px;margin-top:12px;"></div>
+            </div>
+          </section>
+
+          <section class="charts-grid">
+            <article class="card chart-card">
+              <div class="section-heading"><h2>Température</h2><p>Courbe horaire</p></div>
+              <canvas id="tempChart"></canvas>
+              <p class="chart-desc">Courbe horaire de la température en °C.</p>
+            </article>
+            <article class="card chart-card">
+              <div class="section-heading"><h2>Précipitations</h2><p>Volume horaire</p></div>
+              <canvas id="rainChart"></canvas>
+              <p class="chart-desc">Volume de précipitations par heure (mm).</p>
+            </article>
+            <article class="card chart-card">
+              <div class="section-heading"><h2>Humidité</h2><p>Évolution horaire</p></div>
+              <canvas id="humidityChart"></canvas>
+              <p class="chart-desc">Humidité relative (%) mesurée chaque heure.</p>
+            </article>
+            <article class="card chart-card">
+              <div class="section-heading"><h2>Vent</h2><p>Vitesse moyenne</p></div>
+              <canvas id="windChart"></canvas>
+              <p class="chart-desc">Vitesse du vent (km/h) — valeurs horaires.</p>
+            </article>
+            <article class="card chart-card">
+              <div class="section-heading"><h2>Pression</h2><p>Variation de surface</p></div>
+              <canvas id="pressureChart"></canvas>
+              <p class="chart-desc">Pression atmosphérique (hPa), mesurée chaque heure.</p>
+            </article>
+          </section>
+
         </section>
-      </section>
       </main>
     </div>
+
   </div>
+
   <script src="{% static 'weather/js/dashboard.js' %}"></script>
-  <script src="{% static 'weather/js/dashboard-fixes.js' %}"></script>
+  <script src="{% static 'weather/js/tabs.js' %}"></script>
   <script src="{% static 'weather/js/reports.js' %}"></script>
-  <script>
-    // Tabs: keep the dashboard on Vue générale and load dedicated analyses through AJAX.
-    (function(){
-      const tabs = document.querySelectorAll('.tab-btn');
-      const overview = document.getElementById('tabOverview');
-      const analysisPanel = document.getElementById('analysisPanel');
-      const analysisFrame = document.getElementById('analysisFrame');
-      const analysisTitle = document.getElementById('analysisTitle');
-      const analysisSubtitle = document.getElementById('analysisSubtitle');
-      const analysisLoading = document.getElementById('analysisLoading');
-      let activeAnalysisTab = null;
-
-      const pages = {
-        tabHistorique: {
-          url: '/visualization/historique/',
-          title: 'Historique — Visualisation',
-          subtitle: 'Historique horaire de la station sélectionnée.'
-        },
-        tabTendances: {
-          url: '/visualization/tendances/',
-          title: 'Tendances — Visualisation',
-          subtitle: 'Évolution journalière de la station sélectionnée.'
-        }
-      };
-
-      function showOverview() {
-        overview.style.display = 'block';
-        analysisPanel.style.display = 'none';
-      }
-
-      function injectBaseHref(html) {
-        const baseHref = `${window.location.origin}/`;
-        if (/<base\s/i.test(html)) {
-          return html;
-        }
-        return html.replace(/<head([^>]*)>/i, `<head$1><base href="${baseHref}">`);
-      }
-
-      async function loadAnalysisPage(tabId, state) {
-        const page = pages[tabId];
-        if (!page) {
-          showOverview();
-          return;
-        }
-
-        overview.style.display = 'none';
-        analysisPanel.style.display = 'block';
-        analysisTitle.textContent = page.title;
-        analysisSubtitle.textContent = page.subtitle;
-        analysisLoading.style.display = 'block';
-
-        // merge state into query params
-        const params = new URLSearchParams();
-        if (state) {
-          if (state.regionId) params.set('region', state.regionId);
-          if (state.stationId) params.set('station', state.stationId);
-          if (state.period) params.set('period', state.period);
-          if (state.hours) params.set('hours', state.hours);
-          if (state.days) params.set('days', state.days);
-        }
-
-        const url = params.toString() ? `${page.url}?${params.toString()}` : page.url;
-        // fetch server-rendered HTML and inject a script with the parent state so srcdoc can access it
-        let html = '';
-        try {
-          const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          html = await response.text();
-        } catch (err) {
-          console.error('Failed to load analysis page', err);
-          analysisSubtitle.textContent = 'Erreur de chargement de la page d\'analyse.';
-          analysisLoading.style.display = 'none';
-          // keep overview visible as fallback
-          showOverview();
-          return;
-        }
-
-        const injectedState = state ? JSON.stringify(state).replace(/</g,'\\u003c') : '{}';
-        const stateScript = `<script>window.__PARENT_STATE = ${injectedState};<\/script>`;
-        let docWithState = html;
-        if (/<head([^>]*)>/i.test(html)) {
-          docWithState = html.replace(/<head([^>]*)>/i, `<head$1>${stateScript}`);
-        } else {
-          // fallback: prepend script if no head tag
-          docWithState = stateScript + html;
-        }
-
-        analysisFrame.onload = () => { analysisLoading.style.display = 'none'; };
-        analysisFrame.srcdoc = injectBaseHref(docWithState);
-        activeAnalysisTab = tabId;
-      }
-
-      tabs.forEach(btn=>btn.addEventListener('click', ()=>{
-        tabs.forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        if (btn.dataset.target === 'tabOverview') {
-          activeAnalysisTab = null;
-          showOverview();
-          return;
-        }
-
-        loadAnalysisPage(btn.dataset.target).catch(() => {
-          showOverview();
-        });
-      }));
-      // initial state
-      showOverview();
-
-      // postMessage: send dashboard state to iframe child
-      function getParentState(){
-        const regionId = document.getElementById('regionSelect')?.value || '';
-        const stationId = document.getElementById('stationSelect')?.value || '';
-        const period = document.getElementById('periodSelect')?.value || '';
-        const hours = document.getElementById('hoursSelect')?.value || '';
-        const days = document.getElementById('daysSelect')?.value || '';
-        return { regionId, stationId, period, hours, days };
-      }
-
-      // debounce AJAX reloads to avoid too many fetches
-      let _reloadTimer = null;
-      function sendParentState(){
-        if(!analysisFrame || !analysisPanel) return;
-        if(analysisPanel.style.display !== 'block') return;
-        if(!activeAnalysisTab || !pages[activeAnalysisTab]) return;
-        const st = getParentState();
-        clearTimeout(_reloadTimer);
-        _reloadTimer = setTimeout(()=>{
-          loadAnalysisPage(activeAnalysisTab, st).catch(()=>{});
-        }, 250);
-      }
-
-      // forward selects changes to the iframe (AJAX reload) when analysis panel is visible
-      ['regionSelect','stationSelect','periodSelect','hoursSelect','daysSelect'].forEach(id=>{
-        const el = document.getElementById(id);
-        if(el) el.addEventListener('change', ()=>{ sendParentState(); });
-      });
-
-      // Refresh the current analysis page when it is visible.
-      const globalRefresh = document.getElementById('refreshButton');
-      if(globalRefresh){
-        globalRefresh.addEventListener('click', ()=>{
-          if (analysisPanel.style.display === 'block') {
-            sendParentState();
-          }
-        });
-      }
-
-      window.addEventListener('message', (event) => {
-        if (event.origin !== window.location.origin) return;
-        if (event.data?.type === 'childReady' && analysisPanel.style.display === 'block') {
-          sendParentState();
-        }
-      });
-    })();
-  </script>
 </body>
 </html>
