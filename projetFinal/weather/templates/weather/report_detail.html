@@ -1,0 +1,32 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rapport météo — Détail</title>
+  <link rel="stylesheet" href="{% static 'weather/css/dashboard.css' %}">
+</head>
+<body>
+  <div class="dashboard-shell">
+    <header class="topbar">
+      <div>
+        <h1>Détail du rapport</h1>
+        <p class="subtitle">Vue détaillée des indicateurs et résumé.</p>
+      </div>
+    </header>
+
+    <main class="layout-grid">
+      <section class="content-area">
+        <div class="card">
+          <h2 id="reportDate">--</h2>
+          <div id="reportStation" class="station-pill">--</div>
+          <div id="reportSummary" class="report-text">--</div>
+          <div id="reportIndicators" class="metric-row"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="{% static 'weather/js/reports.js' %}"></script>
+</body>
+</html>

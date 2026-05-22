@@ -1,0 +1,35 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rapports météo — Liste</title>
+  <link rel="stylesheet" href="{% static 'weather/css/dashboard.css' %}">
+</head>
+<body class="app-body">
+  <div class="dashboard-shell">
+    <header class="topbar">
+      <div>
+        <h1>Rapports météo</h1>
+        <p class="subtitle">Liste des rapports par date et région.</p>
+      </div>
+    </header>
+
+    <section class="toolbar card">
+      <div class="field-group"><label for="filterRegion">Région</label><select id="filterRegion"></select></div>
+      <div class="field-group"><label for="filterDate">Date</label><input id="filterDate" type="date"></div>
+      <div class="toolbar-actions"><button id="filterBtn">Filtrer</button></div>
+    </section>
+
+    <main class="layout-grid">
+      <section class="content-area">
+        <div class="card">
+          <ul id="reportsList" class="report-list"></ul>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="{% static 'weather/js/reports.js' %}"></script>
+</body>
+</html>

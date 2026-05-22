@@ -102,12 +102,39 @@ body {
 .visualization-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 12px 0; }
 .visualization-grid .card { padding: 14px; }
 
+.analysis-panel {
+  margin: 18px 0 0;
+}
+
+.analysis-shell {
+  padding: 18px;
+}
+
+.analysis-loading {
+  color: var(--muted);
+  margin: 10px 0 14px;
+}
+
+.analysis-frame {
+  width: 100%;
+  min-height: 1400px;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+}
+
 .chart-desc {
   color: var(--muted);
   font-size: 0.92rem;
   margin-top: 10px;
   line-height: 1.4;
 }
+
+.report-list { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+.report-item { padding:8px; border-radius:10px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); }
+.report-item:hover { background: rgba(255,255,255,0.03); }
+.report-meta { color:var(--muted); font-size:0.9rem; margin-top:6px; }
+.report-highlight { padding:12px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; }
 
 .card {
   background: var(--bg-elevated);
