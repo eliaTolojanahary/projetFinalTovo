@@ -15,6 +15,10 @@
     if(!rselect) return;
     fetchJSON(api.regions).then(data=>{
       rselect.innerHTML = '';
+      const defaultRegionOpt = document.createElement('option');
+      defaultRegionOpt.value = '';
+      defaultRegionOpt.textContent = 'Toutes les régions';
+      rselect.appendChild(defaultRegionOpt);
       data.forEach(r=>{
         const opt = document.createElement('option');
         opt.value = r.id;
@@ -24,28 +28,27 @@
       // when region changes, populate stations
       rselect.addEventListener('change', ()=>{
         const regionId = rselect.value;
+        if(!sselect) return;
         sselect.innerHTML = '';
-        const region = data.find(x=>String(x.id)===String(regionId));
-        if(region && region.station){
-          const st = region.station;
-          const opt = document.createElement('option');
-          opt.value = st.id;
-          opt.textContent = st.nom_station;
-          sselect.appendChild(opt);
+        // if no region selected, build a flat list of all stations
+        if(!regionId){
+          const all = [];
+          data.forEach(r=>{ if(Array.isArray(r.station)) r.station.forEach(s=>all.push(s)); else if(r.station) all.push(r.station); });
+          all.forEach(st=>{ const opt=document.createElement('option'); opt.value = st.id; opt.textContent = st.nom_station; sselect.appendChild(opt); });
+        } else {
+          const region = data.find(x=>String(x.id)===String(regionId));
+          if(region){
+            const stations = Array.isArray(region.station) ? region.station : (region.station ? [region.station] : []);
+            stations.forEach(st=>{ const opt=document.createElement('option'); opt.value = st.id; opt.textContent = st.nom_station; sselect.appendChild(opt); });
+          }
         }
+        // set first station as selected and trigger change
+        if(sselect.options.length){ sselect.selectedIndex = 0; sselect.dispatchEvent(new Event('change')); }
       });
-      // trigger initial change
+      // trigger initial change (populate stations list)
       rselect.dispatchEvent(new Event('change'));
-      // initial load for first station
-      const firstStation = sselect.value;
-      if(firstStation){
-        // prefer overview hours mapping
-        const p = document.getElementById('periodSelect');
-        let hours = 24;
-        if(p){ const pv = parseInt(p.value,10); hours = (pv>48)?168:pv; }
-        renderHourlyCharts(firstStation, hours);
-        loadOverview(firstStation);
-      }
+      // if stationSelect has an option, load overview and charts for the first station
+      if(sselect && sselect.options.length){ const firstStation = sselect.value; if(firstStation){ const p = document.getElementById('periodSelect'); let hours = 24; if(p){ const pv = parseInt(p.value,10); hours = (pv>48)?168:pv; } renderHourlyCharts(firstStation, hours); loadOverview(firstStation); } }
     }).catch(err=>{console.error('Failed load regions', err)});
   }
 
