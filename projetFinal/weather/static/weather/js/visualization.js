@@ -5,6 +5,36 @@
     stations: '/weather-stations/',
   };
 
+  function readStateFromQuery(){
+    const params = new URLSearchParams(window.location.search);
+    const regionId = params.get('region');
+    const stationId = params.get('station');
+    const period = params.get('period');
+    const hours = params.get('hours');
+    const days = params.get('days');
+    const has = regionId || stationId || period || hours || days;
+    return has ? { regionId, stationId, period, hours, days } : null;
+  }
+
+  const pageState = {
+    regionId: '',
+    stationId: '',
+    period: '',
+    hours: '24',
+    days: '7'
+  };
+
+  const initialState = (window.__PARENT_STATE && Object.keys(window.__PARENT_STATE).length)
+    ? window.__PARENT_STATE
+    : (readStateFromQuery() || {});
+
+  Object.assign(pageState, initialState);
+
+  function setPageState(nextState){
+    if(!nextState) return;
+    Object.assign(pageState, nextState);
+  }
+
   function fetchJSON(url){
     return fetch(url).then(r=>r.json());
   }
@@ -12,7 +42,7 @@
   function populateRegions(){
     const rselect = document.getElementById('regionSelect');
     const sselect = document.getElementById('stationSelect');
-    if(!rselect) return;
+    if(!rselect || !sselect) return Promise.resolve();
     fetchJSON(api.regions).then(data=>{
       rselect.innerHTML = '';
       data.forEach(r=>{
@@ -38,10 +68,18 @@
           sselect.dispatchEvent(new Event('change', { bubbles: true }));
         }
       });
-      // trigger initial change
-      rselect.dispatchEvent(new Event('change'));
-      // initial load for first station
-      const firstStation = sselect.value;
+      if(pageState.regionId){
+        rselect.value = String(pageState.regionId);
+      }
+      if(pageState.stationId){
+        sselect.value = String(pageState.stationId);
+      }
+
+      // trigger initial change and initial render
+      if(rselect.value){
+        rselect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      const firstStation = sselect.value || pageState.stationId;
       if(firstStation){
         renderForSelectedPage(firstStation);
       }
@@ -53,6 +91,7 @@
   }
 
   function getSelectedHours(){
+    if(pageState.hours) return pageState.hours;
     const p = document.getElementById('periodSelect');
     if(p){
       const pv = parseInt(p.value,10);
@@ -64,6 +103,7 @@
   }
 
   function getSelectedDays(){
+    if(pageState.days) return pageState.days;
     const dsel = document.getElementById('daysSelect');
     if(dsel && dsel.value) return dsel.value;
     return 7;
@@ -71,6 +111,7 @@
 
   function renderForSelectedPage(stationId){
     if(!stationId) return;
+    pageState.stationId = String(stationId);
     loadOverview(stationId);
     if(document.getElementById('hist_tempChart') || document.getElementById('tempChart')){
       renderHourlyCharts(stationId, getSelectedHours());
@@ -240,11 +281,28 @@
 
   function init(){
     populateRegions();
+
+    // If the page has no filters, render immediately from the received request state.
+    if(!document.getElementById('stationSelect')){
+      const bootstrap = async ()=>{
+        let stationId = pageState.stationId;
+        if(!stationId){
+          const stations = await fetchJSON(api.stations).catch(()=>[]);
+          const firstStation = Array.isArray(stations) ? stations[0] : null;
+          stationId = firstStation?.id ? String(firstStation.id) : '';
+        }
+        if(stationId){
+          renderForSelectedPage(stationId);
+        }
+      };
+      bootstrap();
+    }
+
     const refresh = document.getElementById('refreshBtn') || document.getElementById('refreshButton');
-    if(!refresh) return;
-    refresh.addEventListener('click', ()=>{
+    if(refresh){
+      refresh.addEventListener('click', ()=>{
       const s = document.getElementById('stationSelect');
-      if(!s || !s.value) return alert('Sélectionnez une station');
+      if(!s || !s.value) return;
       const stationId = s.value;
       // decide page type: historique vs tendances
       if(document.getElementById('hist_tempChart') || document.getElementById('tempChart')){
@@ -253,7 +311,8 @@
       if(document.getElementById('dailyTempChart')){
         renderDailyCharts(stationId, getSelectedDays());
       }
-    });
+      });
+    }
 
     // auto-load daily charts on the Tendances page
     if(document.getElementById('dailyTempChart')){
@@ -336,17 +395,6 @@
   };
 
   // also read state from query params (when dashboard passes via ?station=...)
-  function readStateFromQuery(){
-    const params = new URLSearchParams(window.location.search);
-    const regionId = params.get('region');
-    const stationId = params.get('station');
-    const period = params.get('period');
-    const hours = params.get('hours');
-    const days = params.get('days');
-    const has = regionId || stationId || period || hours || days;
-    return has ? { regionId, stationId, period, hours, days } : null;
-  }
-
   document.addEventListener('DOMContentLoaded', ()=>{
     // priority: injected parent state (srcdoc) -> query params -> none
     const injected = window.__PARENT_STATE || null;
