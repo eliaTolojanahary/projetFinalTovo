@@ -144,7 +144,8 @@ function addStationMarker(station) {
 function fitMap(stations) {
   if (!stations.length || !state.map) return;
   const bounds = L.latLngBounds(stations.map(s => [s.latitude, s.longitude]));
-  state.map.fitBounds(bounds.pad(0.25));
+  // L'ajout de { maxZoom: 8 } empêche la carte de zoomer trop près
+  state.map.fitBounds(bounds.pad(0.25), { maxZoom: 8 });
 }
 
 // ─── Metric cards ───────────────────────────────────────────────────────────
