@@ -1,0 +1,59 @@
+
+==============================================================
+  ORDRE RECOMMANDÉ & DÉPENDANCES
+==============================================================
+
+  Étape 1  →  Manoa     : schema.sql  (en premier, tout le monde attend ça)
+  Étape 2  →  Amboara   : fichiers statiques CSV/JSON  (parallèle à étape 1)
+  Étape 3  →  Manoa     : script seed (après étapes 1 + 2)
+  Étape 4  →  Elia      : extractor.py + transformer.py  (après étape 3)
+  Étape 5  →  Elia      : reporter.py + quality.py + DAG complet
+  Étape 6  →  Jemima    : connexion Power BI + pages météo & historique  (après étape 3)
+  Étape 7  →  Valisoa   : pages rapports + alertes + mise en page  (après étape 6)
+  Étape 8  →  Tous      : tests intégration — ETL alimente → Power BI affiche
+
+
+==============================================================
+  PAGES DU DASHBOARD POWER BI (.pbix partagé)
+==============================================================
+
+  Page 1 : Météo Actuelle     [Jemima]   carte + blocs météo temps réel
+  Page 2 : Historique 24h     [Jemima]   graphiques horaires
+  Page 3 : Tendances 7 jours  [Jemima]   courbes journalières
+  Page 4 : Rapports           [Valisoa]  liste + détail + export PDF
+  Page 5 : Alertes            [Valisoa]  tableau alertes colorées
+  Page 6 : KPI & Stats        [Valisoa]  records, moyennes, statut pipeline
+
+  Connexion : Power BI Desktop → PostgreSQL (DirectQuery ou Import)
+
+
+==============================================================
+  FICHIERS STATIQUES MVP (minimum pour démarrer)
+==============================================================
+
+  regions_madagascar.csv
+  weather_locations.csv
+  api_sources.json
+  schema.sql
+  config.yaml
+
+
+==============================================================
+  PIPELINE COMPLET
+==============================================================
+
+  Open-Meteo API
+       ↓
+  extractor.py  (Elia)
+       ↓
+  Airflow DAG   (Elia)
+       ↓
+  weather_raw   (PostgreSQL)
+       ↓
+  transformer.py → weather_clean → weather_daily
+       ↓
+  reporter.py   → weather_report + alerts
+       ↓
+  Power BI Dashboard  (Jemima + Valisoa)
+
+==============================================================

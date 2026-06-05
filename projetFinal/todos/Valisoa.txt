@@ -1,0 +1,26 @@
+
+──────────────────────────────────────────────────────────────
+  VALISOA ★ — Power BI (rapports, alertes, mise en page)
+──────────────────────────────────────────────────────────────
+
+Phase 1 — Page "Rapports Météo"
+  - Liste des rapports générés par date et par région
+  - Vue détail : tous les indicateurs + résumé textuel
+  - Export PDF du rapport
+
+Phase 2 — Page "Alertes"
+  - Tableau des alertes actives
+  - Couleur selon niveau de sévérité
+  - Historique des alertes
+  - Filtre par type d'alerte
+
+Phase 3 — Page "KPI & Statistiques"
+  - Records : température max/min globaux
+  - Région la plus pluvieuse
+  - UV index moyen national
+  - Statut dernière exécution Airflow
+
+Phase 4 — Mise en page finale
+  - Mise en page et charte graphique du .pbix
+  - Refresh automatique des données
+  - Publication / export final

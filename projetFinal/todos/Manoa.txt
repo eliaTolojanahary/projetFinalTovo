@@ -1,0 +1,30 @@
+
+──────────────────────────────────────────────────────────────
+  MANOA — Schema SQL + Config + Seed + QA
+──────────────────────────────────────────────────────────────
+
+1. schema.sql — Création de la base de données
+     Tables MVP :
+       - regions, weather_locations
+       - weather_raw, weather_clean, weather_daily
+       - weather_report, api_sources, alerts, data_quality
+     Clés primaires, clés étrangères, index
+
+2. config.yaml — Configuration du pipeline
+     - URLs API Open-Meteo (current, hourly, daily)
+     - Intervalles d'exécution (1h / 24h)
+     - Paramètres DAG (retries, timeout)
+     - Credentials DB (via .env)
+
+3. Script seed — Chargement initial des données statiques
+     - Charger tous les fichiers d'Amboara en BDD
+     - Vérifier intégrité des clés étrangères
+     - Log : N lignes insérées par table
+
+4. quality.py — Contrôle qualité
+     - Vérifier valeurs hors plage (temp, humidité, pression)
+     - Détecter les nulls inattendus après transformation
+     - Logger les anomalies → table data_quality
+
+  Manoa est le pivot entre Elia (ETL) et Jemima/Valisoa (Power BI).
+  Son schema.sql est la référence commune pour toute l'équipe.

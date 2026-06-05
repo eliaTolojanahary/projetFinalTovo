@@ -1,0 +1,37 @@
+──────────────────────────────────────────────────────────────
+  AMBOARA — Données Statiques (fichiers de référence)
+──────────────────────────────────────────────────────────────
+
+Ces fichiers sont créés UNE SEULE FOIS et chargés en base
+au démarrage (par le script seed de Manoa).
+
+  1. regions_madagascar.csv
+       22 régions : id, nom_region, chef_lieu,
+       latitude, longitude, altitude, climate_type_id
+
+  2. weather_locations.csv
+       22 stations (1 par région) : id, nom_station,
+       region_id, latitude, longitude, altitude, timezone_id
+
+  3. climate_types.txt
+       Types de climat : Tropical humide, Semi-aride,
+       Tempéré, etc.
+
+  4. timezones.csv  (en dur)
+       Ex : Indian/Antananarivo, UTC+3
+
+  5. api_sources.json
+       Open-Meteo : base_url, api_type, is_active
+
+  6. units.json + variables.json
+       Unités : °C, %, mm, km/h, hPa…
+       Variables : temperature_2m, precipitation, wind…
+
+  7. weather_thresholds.json  (en dur)
+       Seuils : ex. temp > 35°C = alerte chaleur
+
+  8. alerts_types.json  (en dur)
+       Types : chaleur, pluie intense, vent fort…
+
+  Livraison attendue AVANT que Manoa lance le script seed.
+

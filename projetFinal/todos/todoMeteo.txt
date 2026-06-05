@@ -1,0 +1,229 @@
+==============================================================
+  WEATHER ANALYTICS MADAGASCAR — RÉPARTITION DES TÂCHES
+==============================================================
+Équipe : Elia (CP) · Jemima · Amboara · Manoa · Valisoa
+Dashboard : Power BI  (★ = a Power BI installé : Jemima, Valisoa)
+==============================================================
+
+
+──────────────────────────────────────────────────────────────
+  ELIA — Chef de Projet + ETL & Airflow
+──────────────────────────────────────────────────────────────
+
+Phase 1 — Environnement
+  - Installer Apache Airflow (local, Python)
+  - Installer PostgreSQL → créer la base weather_madagascar
+
+Phase 2 — Extraction API (Open-Meteo)
+  - Écrire extractor.py
+      · Appel current  : temperature_2m, humidity, precip, wind, pressure
+      · Appel hourly   : mêmes variables
+      · Appel daily    : temp max/min, precip_sum, wind_max, uv_index_max
+  - Stocker la réponse brute JSON → table weather_raw
+
+Phase 3 — Transformation & Nettoyage
+  - Écrire transformer.py
+      · Parser le JSON brut depuis weather_raw
+      · Valider/nettoyer les valeurs (nulls, types, unités)
+      · Insérer → weather_clean
+      · Calculer agrégations journalières → weather_daily
+
+Phase 4 — Rapports & Alertes
+  - Écrire reporter.py
+      · Rapport météo par location et par jour → weather_report
+      · Logique alertes simples → table alerts
+
+Phase 5 — DAG Airflow
+  - Créer weather_etl_dag.py
+      · Tâche extraction current (toutes les heures)
+      · Tâche extraction hourly/daily (une fois par jour)
+      · Tâche transformation, agrégations, rapports, QA
+      · Dépendances entre tâches, retries, alertes d'échec
+
+  + Coordination générale de l'équipe (rôle CP)
+
+
+──────────────────────────────────────────────────────────────
+  JEMIMA ★ — Power BI (pages principales)
+──────────────────────────────────────────────────────────────
+
+Phase 1 — Connexion
+  - Connecter Power BI Desktop → PostgreSQL (DirectQuery)
+  - Importer les tables : regions, weather_locations,
+    weather_clean, weather_daily, weather_report, alerts
+
+Phase 2 — Page "Météo Actuelle"
+  - Carte de Madagascar avec les stations météo
+  - Sélecteur région / station
+  - Blocs : température, humidité, vent, pression, UV
+
+Phase 3 — Page "Historique 24h"
+  - Graphique courbe de température horaire
+  - Barres de précipitations horaires
+  - Courbe humidité
+  - Filtre par station
+
+Phase 4 — Page "Tendances 7 jours"
+  - Courbe temp min / moy / max sur 7 jours
+  - Précipitations cumulées
+  - UV index max
+  - Comparaison entre régions
+
+Note : Jemima crée la structure du fichier .pbix
+       Valisoa y ajoute ensuite ses pages (rapports/alertes)
+
+
+──────────────────────────────────────────────────────────────
+  VALISOA ★ — Power BI (rapports, alertes, mise en page)
+──────────────────────────────────────────────────────────────
+
+Phase 1 — Page "Rapports Météo"
+  - Liste des rapports générés par date et par région
+  - Vue détail : tous les indicateurs + résumé textuel
+  - Export PDF du rapport
+
+Phase 2 — Page "Alertes"
+  - Tableau des alertes actives
+  - Couleur selon niveau de sévérité
+  - Historique des alertes
+  - Filtre par type d'alerte
+
+Phase 3 — Page "KPI & Statistiques"
+  - Records : température max/min globaux
+  - Région la plus pluvieuse
+  - UV index moyen national
+  - Statut dernière exécution Airflow
+
+Phase 4 — Mise en page finale
+  - Mise en page et charte graphique du .pbix
+  - Refresh automatique des données
+  - Publication / export final
+
+
+──────────────────────────────────────────────────────────────
+  AMBOARA — Données Statiques (fichiers de référence)
+──────────────────────────────────────────────────────────────
+
+Ces fichiers sont créés UNE SEULE FOIS et chargés en base
+au démarrage (par le script seed de Manoa).
+
+  1. regions_madagascar.csv
+       22 régions : id, nom_region, chef_lieu,
+       latitude, longitude, altitude, climate_type_id
+
+  2. weather_locations.csv
+       22 stations (1 par région) : id, nom_station,
+       region_id, latitude, longitude, altitude, timezone_id
+
+  3. climate_types.txt
+       Types de climat : Tropical humide, Semi-aride,
+       Tempéré, etc.
+
+  4. timezones.csv  (en dur)
+       Ex : Indian/Antananarivo, UTC+3
+
+  5. api_sources.json
+       Open-Meteo : base_url, api_type, is_active
+
+  6. units.json + variables.json
+       Unités : °C, %, mm, km/h, hPa…
+       Variables : temperature_2m, precipitation, wind…
+
+  7. weather_thresholds.json  (en dur)
+       Seuils : ex. temp > 35°C = alerte chaleur
+
+  8. alerts_types.json  (en dur)
+       Types : chaleur, pluie intense, vent fort…
+
+  Livraison attendue AVANT que Manoa lance le script seed.
+
+
+──────────────────────────────────────────────────────────────
+  MANOA — Schema SQL + Config + Seed + QA
+──────────────────────────────────────────────────────────────
+
+1. schema.sql — Création de la base de données
+     Tables MVP :
+       - regions, weather_locations
+       - weather_raw, weather_clean, weather_daily
+       - weather_report, api_sources, alerts, data_quality
+     Clés primaires, clés étrangères, index
+
+2. config.yaml — Configuration du pipeline
+     - URLs API Open-Meteo (current, hourly, daily)
+     - Intervalles d'exécution (1h / 24h)
+     - Paramètres DAG (retries, timeout)
+     - Credentials DB (via .env)
+
+3. Script seed — Chargement initial des données statiques
+     - Charger tous les fichiers d'Amboara en BDD
+     - Vérifier intégrité des clés étrangères
+     - Log : N lignes insérées par table
+
+4. quality.py — Contrôle qualité
+     - Vérifier valeurs hors plage (temp, humidité, pression)
+     - Détecter les nulls inattendus après transformation
+     - Logger les anomalies → table data_quality
+
+  Manoa est le pivot entre Elia (ETL) et Jemima/Valisoa (Power BI).
+  Son schema.sql est la référence commune pour toute l'équipe.
+
+
+==============================================================
+  ORDRE RECOMMANDÉ & DÉPENDANCES
+==============================================================
+
+  Étape 1  →  Manoa     : schema.sql  (en premier, tout le monde attend ça)
+  Étape 2  →  Amboara   : fichiers statiques CSV/JSON  (parallèle à étape 1)
+  Étape 3  →  Manoa     : script seed (après étapes 1 + 2)
+  Étape 4  →  Elia      : extractor.py + transformer.py  (après étape 3)
+  Étape 5  →  Elia      : reporter.py + quality.py + DAG complet
+  Étape 6  →  Jemima    : connexion Power BI + pages météo & historique  (après étape 3)
+  Étape 7  →  Valisoa   : pages rapports + alertes + mise en page  (après étape 6)
+  Étape 8  →  Tous      : tests intégration — ETL alimente → Power BI affiche
+
+
+==============================================================
+  PAGES DU DASHBOARD POWER BI (.pbix partagé)
+==============================================================
+
+  Page 1 : Météo Actuelle     [Jemima]   carte + blocs météo temps réel
+  Page 2 : Historique 24h     [Jemima]   graphiques horaires
+  Page 3 : Tendances 7 jours  [Jemima]   courbes journalières
+  Page 4 : Rapports           [Valisoa]  liste + détail + export PDF
+  Page 5 : Alertes            [Valisoa]  tableau alertes colorées
+  Page 6 : KPI & Stats        [Valisoa]  records, moyennes, statut pipeline
+
+  Connexion : Power BI Desktop → PostgreSQL (DirectQuery ou Import)
+
+
+==============================================================
+  FICHIERS STATIQUES MVP (minimum pour démarrer)
+==============================================================
+
+  regions_madagascar.csv
+  weather_locations.csv
+  api_sources.json
+  schema.sql
+  config.yaml
+
+
+==============================================================
+  PIPELINE COMPLET
+==============================================================
+
+  Open-Meteo API
+       ↓
+  extractor.py  (Elia)
+       ↓
+  Airflow DAG   (Elia)
+       ↓
+  weather_raw   (PostgreSQL)
+       ↓
+  transformer.py → weather_clean → weather_daily
+       ↓
+  reporter.py   → weather_report + alerts
+       ↓
+  Power BI Dashboard  (Jemima + Valisoa)
+
+==============================================================

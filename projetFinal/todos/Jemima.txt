@@ -1,0 +1,30 @@
+
+──────────────────────────────────────────────────────────────
+  JEMIMA ★ — Power BI (pages principales)
+──────────────────────────────────────────────────────────────
+
+Phase 1 — Connexion
+  - Connecter Power BI Desktop → PostgreSQL (DirectQuery)
+  - Importer les tables : regions, weather_locations,
+    weather_clean, weather_daily, weather_report, alerts
+
+Phase 2 — Page "Météo Actuelle"
+  - Carte de Madagascar avec les stations météo
+  - Sélecteur région / station
+  - Blocs : température, humidité, vent, pression, UV
+
+Phase 3 — Page "Historique 24h"
+  - Graphique courbe de température horaire
+  - Barres de précipitations horaires
+  - Courbe humidité
+  - Filtre par station
+
+Phase 4 — Page "Tendances 7 jours"
+  - Courbe temp min / moy / max sur 7 jours
+  - Précipitations cumulées
+  - UV index max
+  - Comparaison entre régions
+
+Note : Jemima crée la structure du fichier .pbix
+       Valisoa y ajoute ensuite ses pages (rapports/alertes)
+
