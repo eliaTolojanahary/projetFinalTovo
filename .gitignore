@@ -1,0 +1,19 @@
+# Virtualenv
+venv/
+.meteo/
+meteo/
+
+# Django
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+staticfiles/
+
+# Variables d'environnement (clés secrètes, credentials)
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/

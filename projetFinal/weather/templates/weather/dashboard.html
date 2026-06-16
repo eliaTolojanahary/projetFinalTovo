@@ -1,0 +1,183 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather Dashboard — Madagascar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="{% static 'weather/css/dashboard.css' %}">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="dashboard-shell">
+    <div id="newDataPopup" class="new-data-popup" style="display:none;" role="alert" aria-live="polite">
+      <div class="new-data-popup__inner">
+        <div class="new-data-popup__icon"></div>
+        <div class="new-data-popup__text">
+          <strong>Nouvelles données disponibles</strong>
+          <span id="newDataDetail">Airflow vient de mettre à jour la station.</span>
+        </div>
+        <button id="newDataRefreshBtn" type="button" class="new-data-popup__btn">Rafraîchir</button>
+        <button id="newDataDismissBtn" type="button" class="new-data-popup__dismiss" aria-label="Fermer">✕</button>
+      </div>
+    </div>
+
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Weather Analytics Madagascar</p>
+        <h1>Dashboard météo interactif</h1>
+        <p class="subtitle">Filtre, compare et visualise les stations météo en temps réel.</p>
+      </div>
+      <div class="topbar-badge">
+        <span id="lastRefreshLabel">Dernière mise à jour: --</span>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab-btn active" data-target="tabOverview">Vue générale</button>
+      <button class="tab-btn" data-target="tabHistorique">Historique</button>
+      <button class="tab-btn" data-target="tabTendances">Tendances</button>
+    </nav>
+
+    <section class="toolbar card">
+      <div class="field-group">
+        <label for="regionSelect">Région</label>
+        <select id="regionSelect"></select>
+      </div>
+      <div class="field-group">
+        <label for="stationSelect">Station</label>
+        <select id="stationSelect"></select>
+      </div>
+      <div class="field-group">
+        <label for="periodSelect">Période</label>
+        <select id="periodSelect">
+          <option value="24">24h</option>
+          <option value="72">72h</option>
+          <option value="168">7 jours</option>
+        </select>
+      </div>
+      <div class="toolbar-actions">
+        <button id="refreshButton" type="button">Rafraîchir</button>
+      </div>
+    </section>
+
+    <!-- Panneau d'analyse (Historique / Tendances) -->
+    <section id="analysisPanel" class="analysis-panel" style="display:none;">
+      <div class="card analysis-shell">
+        <div class="section-heading">
+          <h2 id="analysisTitle">Analyse</h2>
+          <p id="analysisSubtitle">Chargement…</p>
+        </div>
+        <div id="analysisLoading" class="analysis-loading">Chargement…</div>
+        <iframe id="analysisFrame" class="analysis-frame" title="Analyse météo"></iframe>
+      </div>
+    </section>
+
+    <!-- Vue générale -->
+    <div id="tabOverview">
+      <main class="layout-grid">
+
+        <aside class="sidebar card">
+          <div class="sidebar-section">
+            <h2>Station active</h2>
+            <div id="stationInfo" class="station-info"></div>
+          </div>
+          <div class="sidebar-section">
+            <h2>Alertes actives</h2>
+            <ul id="alertsList" class="alert-list"></ul>
+          </div>
+          <div class="sidebar-section">
+            <h2>Rapport du jour</h2>
+            <p id="reportData" class="report-text">Sélectionnez une station</p>
+          </div>
+          <div class="sidebar-section">
+            <h2>Autres rapports</h2>
+            <ul id="dashboardReportsList" class="report-list"></ul>
+          </div>
+        </aside>
+
+        <section class="content-area">
+
+          <section class="hero-grid">
+            <article class="metric-card accent-blue">
+              <p class="metric-label">Température</p>
+              <strong id="metricTemp">--</strong><span>°C</span>
+            </article>
+            <article class="metric-card accent-cyan">
+              <p class="metric-label">Pluie</p>
+              <strong id="metricRain">--</strong><span>mm</span>
+            </article>
+            <article class="metric-card accent-green">
+              <p class="metric-label">Humidité</p>
+              <strong id="metricHumidity">--</strong><span>%</span>
+            </article>
+            <article class="metric-card accent-gold">
+              <p class="metric-label">Vent</p>
+              <strong id="metricWind">--</strong><span>km/h</span>
+            </article>
+            <article class="metric-card accent-violet">
+              <p class="metric-label">Pression</p>
+              <strong id="metricPressure">--</strong><span>hPa</span>
+            </article>
+          </section>
+
+          <section class="map-card card">
+            <div class="section-heading">
+              <h2>Carte des stations</h2>
+              <p>Repère visuel des stations sélectionnées et de leur région.</p>
+            </div>
+            <div id="map"></div>
+          </section>
+
+          <section id="reportHighlight" class="card" style="margin-top:16px;">
+            <div id="highlightContent" style="padding:12px;">
+              <h3 id="highlightTitle">Aucun rapport sélectionné</h3>
+              <p id="highlightSummary" class="report-text">Utilisez les filtres pour sélectionner un rapport.</p>
+              <div id="highlightIndicators" style="display:flex;gap:12px;margin-top:12px;"></div>
+            </div>
+          </section>
+
+          <section class="charts-grid">
+            <article class="card chart-card">
+              <div class="section-heading"><h2>Température</h2><p>Courbe horaire</p></div>
+              <canvas id="tempChart"></canvas>
+              <p class="chart-desc">Courbe horaire de la température en °C.</p>
+            </article>
+            <article class="card chart-card">
+              <div class="section-heading"><h2>Précipitations</h2><p>Volume horaire</p></div>
+              <canvas id="rainChart"></canvas>
+              <p class="chart-desc">Volume de précipitations par heure (mm).</p>
+            </article>
+            <article class="card chart-card">
+              <div class="section-heading"><h2>Humidité</h2><p>Évolution horaire</p></div>
+              <canvas id="humidityChart"></canvas>
+              <p class="chart-desc">Humidité relative (%) mesurée chaque heure.</p>
+            </article>
+            <article class="card chart-card">
+              <div class="section-heading"><h2>Vent</h2><p>Vitesse moyenne</p></div>
+              <canvas id="windChart"></canvas>
+              <p class="chart-desc">Vitesse du vent (km/h) — valeurs horaires.</p>
+            </article>
+            <article class="card chart-card">
+              <div class="section-heading"><h2>Pression</h2><p>Variation de surface</p></div>
+              <canvas id="pressureChart"></canvas>
+              <p class="chart-desc">Pression atmosphérique (hPa), mesurée chaque heure.</p>
+            </article>
+          </section>
+
+        </section>
+      </main>
+    </div>
+
+  </div>
+
+  <script src="{% static 'weather/js/dashboard.js' %}"></script>
+  <script src="{% static 'weather/js/tabs.js' %}"></script>
+  <script src="{% static 'weather/js/reports.js' %}"></script>
+</body>
+</html>
