@@ -1,6 +1,8 @@
 
 .env
 *.env
+projetFinal/airflowenv
+
 
 *.md
 !README.md
